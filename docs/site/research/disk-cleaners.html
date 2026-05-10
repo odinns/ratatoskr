@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Ratatoskr research - disk cleaner comparison</title>
+    <meta name="description" content="Private research notes comparing disk cleaner features for Ratatoskr planning.">
+    <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../assets/site.css">
+  </head>
+  <body>
+    <main class="section-shell research-page">
+      <section class="research-hero">
+        <p class="kicker">Private research</p>
+        <h1>Disk cleaner comparison.</h1>
+        <p class="lede">This page is not linked from the public site. It is a feature smell test for Ratatoskr, not marketing copy.</p>
+      </section>
+
+      <section class="research-section">
+        <div class="section-intro">
+          <h2>Short read.</h2>
+          <p>Ratatoskr’s gap is not “find big files”. Plenty of tools do that. The useful gap is safe, inspectable, local, rule-backed cleanup for developer/project waste with agent-readable reports.</p>
+        </div>
+      </section>
+
+      <section class="research-section">
+        <div class="comparison-wrap">
+          <table class="comparison-table">
+            <caption>Legend: green check means the feature is available free. Red X means the feature is paid. Empty means not supported or not clearly advertised. Grey slash means Ratatoskr should not do it.</caption>
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>Model</th>
+                <th>Open source</th>
+                <th>Visual disk map</th>
+                <th>App/system junk cleanup</th>
+                <th>Large/old file finder</th>
+                <th>Duplicate finder</th>
+                <th>Similar photos</th>
+                <th>CLI / automation</th>
+                <th>Report/export handoff</th>
+                <th>Trash / review before delete</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="own-row">
+                <th>Ratatoskr</th>
+                <td>Free</td>
+                <td class="free">✓</td>
+                <td class="wont">⊘</td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td class="wont">⊘</td>
+                <td class="wont">⊘</td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td>Local CLI for developer/project waste. Read-only scan first, explicit rules, risk labels, JSON reports, skill handoff. Cleaning is intentionally not first.</td>
+              </tr>
+              <tr>
+                <th>CleanMyMac</th>
+                <td>Paid after trial</td>
+                <td></td>
+                <td class="paid">✕</td>
+                <td class="paid">✕</td>
+                <td class="paid">✕</td>
+                <td class="paid">✕</td>
+                <td class="paid">✕</td>
+                <td></td>
+                <td></td>
+                <td class="paid">✕</td>
+                <td>Broad Mac cleaner. Free mode scans, but cleanup is locked unless the trial or paid plan starts.</td>
+              </tr>
+              <tr>
+                <th>CCleaner</th>
+                <td>Freemium / paid Pro</td>
+                <td></td>
+                <td></td>
+                <td class="free">✓</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="free">✓</td>
+                <td>Basic cleaning appears free; Pro pushes driver/software updating and background automation.</td>
+              </tr>
+              <tr>
+                <th>DaisyDisk</th>
+                <td>Paid one-time</td>
+                <td></td>
+                <td class="paid">✕</td>
+                <td></td>
+                <td class="paid">✕</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="paid">✕</td>
+                <td>Excellent visual scanner. Explicitly manual: no automated cleaning.</td>
+              </tr>
+              <tr>
+                <th>Avast Cleanup Premium</th>
+                <td>Paid subscription</td>
+                <td></td>
+                <td></td>
+                <td class="paid">✕</td>
+                <td></td>
+                <td class="paid">✕</td>
+                <td class="paid">✕</td>
+                <td></td>
+                <td></td>
+                <td class="paid">✕</td>
+                <td>Broad consumer cleanup: junk, browser cleaning, duplicates, similar/bad photos.</td>
+              </tr>
+              <tr>
+                <th>Sweepo</th>
+                <td>Free</td>
+                <td></td>
+                <td></td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td></td>
+                <td></td>
+                <td class="free">✓</td>
+                <td>Free Mac cleaner, no hidden fees claimed. Moves files to Trash first. Not open source from what I saw.</td>
+              </tr>
+              <tr>
+                <th>BleachBit</th>
+                <td>Free</td>
+                <td class="free">✓</td>
+                <td></td>
+                <td class="free">✓</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="free">✓</td>
+                <td></td>
+                <td class="free">✓</td>
+                <td>Free/open source, scriptable, preview/delete model, privacy features, custom CleanerML rules. Windows/Linux.</td>
+              </tr>
+              <tr>
+                <th>Czkawka</th>
+                <td>Free</td>
+                <td class="free">✓</td>
+                <td></td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td>Free/open source cross-platform duplicate/similar/broken/temp-file scanner. CLI can export results.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="research-section">
+        <div class="section-intro">
+          <h2>Ideas worth stealing.</h2>
+        </div>
+        <div class="docs-grid">
+          <article class="doc-card">
+            <h3>Preview-first workflow</h3>
+            <p>Scan, review, then delete. Ratatoskr already wants this. Keep it sacred.</p>
+          </article>
+          <article class="doc-card">
+            <h3>Rule explanations</h3>
+            <p>Show owner, deletion cost, exclusions, consequence, and default-cleanability beside each candidate.</p>
+          </article>
+          <article class="doc-card">
+            <h3>Large-file awareness</h3>
+            <p>Show big files without deletion pressure. Unknown large files stay report-only.</p>
+          </article>
+          <article class="doc-card">
+            <h3>Agent-readable export</h3>
+            <p>Structured JSON for judgment is a real differentiator. Make it boring, complete, and private by default.</p>
+          </article>
+          <article class="doc-card">
+            <h3>Trash first</h3>
+            <p>Recovery matters. Permanent delete should need a separate, explicit decision.</p>
+          </article>
+          <article class="doc-card">
+            <h3>Developer waste profiles</h3>
+            <p>Laravel, Node, Composer, coverage, Playwright, framework caches. Consumer cleaners mostly miss the useful teeth.</p>
+          </article>
+          <article class="doc-card">
+            <h3>Target mode</h3>
+            <p>“I need 17 GB.” Rank safe and cautious candidates until the target is met. Better than a giant list.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
