@@ -422,16 +422,13 @@ and the next manual review step.</code></pre>
         <div class="section-intro">
           <p class="kicker">Commands</p>
           <h2>The useful surface area stays small.</h2>
-          <p>Milestone 1 is scan-only. Cleaning can wait until the scan is boringly reliable.</p>
+          <p>v1.0.0 is read-only. Scan, report, summarize, decide.</p>
         </div>
         <div class="command-grid">
-          <pre><code>ratatoskr scan</code></pre>
           <pre><code>ratatoskr scan --path ~/Code</code></pre>
-          <pre><code>ratatoskr scan --path ~/Code --format json > ratatoskr-report.json</code></pre>
-          <pre><code>ratatoskr summary --file ratatoskr-report.json --target 17GB</code></pre>
+          <pre><code>ratatoskr report --path ~/Code --format json > ratatoskr-report.json</code></pre>
           <pre><code>ratatoskr summary --file ratatoskr-report.json --target 17GB --format json</code></pre>
           <pre><code>ratatoskr rules</code></pre>
-          <pre><code>ratatoskr report --path ~/Code --format json</code></pre>
           <pre><code>codex use ratatoskr-report-analysis ratatoskr-report.json</code></pre>
         </div>
         <div class="reference-grid" aria-label="Ratatoskr command reference">
