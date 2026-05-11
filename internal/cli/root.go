@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/odinn/ratatoskr/internal/ratatoskr"
+	"github.com/odinns/ratatoskr/internal/ratatoskr"
 	"github.com/spf13/cobra"
 )
 

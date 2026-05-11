@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ratatoskr - Open-source disk cleaner for developers</title>
-    <meta name="description" content="Ratatoskr is a free, open-source, AI-assisted disk cleaner for developers. It finds generated waste, explains the risk, and prunes only when told.">
-    <meta property="og:title" content="Ratatoskr - Open-source disk cleaner for developers">
-    <meta property="og:description" content="Free, open-source, AI-assisted cleanup for developer machines. Evidence first. Deletion only when told.">
+    <title>Ratatoskr - Open-source disk scanner for developers</title>
+    <meta name="description" content="Ratatoskr is a free, open-source, AI-assisted disk scanner for developers. It finds generated waste, explains the risk, and plans enough space without deleting anything.">
+    <meta property="og:title" content="Ratatoskr - Open-source disk scanner for developers">
+    <meta property="og:description" content="Free, open-source, AI-assisted disk planning for developer machines. Evidence first. No deletion in v1.0.0.">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#120f0c">
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -52,7 +52,7 @@
           </div>
           <div class="trust-contract" aria-label="Ratatoskr safety contract">
             <span>Read-only scan</span>
-            <span>Explicit clean</span>
+            <span>No v1 deletion</span>
             <span>Unknown stays report-only</span>
           </div>
         </div>
@@ -312,13 +312,13 @@ Excluded report-only: 1.5 GiB across 3 candidates</code></pre>
         </div>
         <div class="section-intro">
           <p class="kicker">How it works</p>
-          <h2>Scan first. Explain first. Trash first.</h2>
+          <h2>Scan first. Explain first. Decide first.</h2>
           <ol class="flow-list">
             <li>Scan the tree</li>
             <li>Explain every finding</li>
             <li>Group by risk</li>
-            <li>Ask before pruning</li>
-            <li>Trash first</li>
+            <li>Project a target</li>
+            <li>Hand off the report</li>
             <li>Skip anything suspicious</li>
           </ol>
         </div>
@@ -382,7 +382,7 @@ and the next manual review step.</code></pre>
           <p class="kicker">Myth, lightly applied</p>
           <h2>Ratatoskr follows the branches. The rules decide what counts as rot.</h2>
           <p>The name brings the mythology. The product stays practical: resolve the path, explain the risk, skip what looks wrong.</p>
-          <p>It is a disk cleaner with a leash, not a cleanup ritual.</p>
+          <p>It is a disk scanner with judgment, not a cleanup ritual.</p>
         </div>
         <div class="prune-scene">
           <img src="assets/images/safe-prune.png" alt="Ratatoskr carefully clips one safe twig while leaving the rest of the filesystem tree untouched." width="1024" height="1024" loading="lazy">
@@ -404,8 +404,8 @@ and the next manual review step.</code></pre>
             <p>Scan <code>~/Code</code> for build output, framework logs, coverage, dependency folders, and caches without touching personal files.</p>
           </article>
           <article class="doc-card">
-            <h3>Before a clean</h3>
-            <p>Export JSON, inspect the risk groups, and make the exact deletion list boring before anything moves to Trash.</p>
+            <h3>Before deleting anything</h3>
+            <p>Export JSON, inspect the risk groups, and make the exact manual action list boring before anything moves.</p>
           </article>
           <article class="doc-card">
             <h3>Scanner QA</h3>
@@ -475,7 +475,7 @@ and the next manual review step.</code></pre>
 
     <footer class="site-footer section-shell">
       <div>
-        <p>Free, open-source disk cleaning for developer machines. AI-assisted, user-triggered, and allergic to mystery deletion.</p>
+        <p>Free, open-source disk scanning for developer machines. AI-assisted, user-triggered, and allergic to mystery deletion.</p>
         <p>I found the rot. Here is why I think it is rot. Here is what I refuse to touch. You decide when I bite.</p>
       </div>
       <a href="https://github.com/odinns/ratatoskr" target="_blank" rel="noopener noreferrer">GitHub</a>

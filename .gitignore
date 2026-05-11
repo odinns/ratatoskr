@@ -1,0 +1,18 @@
+# Go
+/ratatoskr
+/dist/
+/coverage.out
+
+# Local editor and OS noise
+.DS_Store
+.idea/
+.vscode/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Temporary reports
+ratatoskr-report.json
+report.json

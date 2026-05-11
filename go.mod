@@ -1,4 +1,4 @@
-module github.com/odinn/ratatoskr
+module github.com/odinns/ratatoskr
 
 go 1.26.3
 

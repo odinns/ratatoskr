@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/odinn/ratatoskr/internal/cli"
+	"github.com/odinns/ratatoskr/internal/cli"
 )
 
 func main() {

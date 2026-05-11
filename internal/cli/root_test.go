@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/odinn/ratatoskr/internal/ratatoskr"
+	"github.com/odinns/ratatoskr/internal/ratatoskr"
 )
 
 func TestScanJSONAndReportJSONAreValid(t *testing.T) {
