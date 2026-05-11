@@ -197,21 +197,35 @@ func (s Scanner) addProjectCandidates(project string, kind projectKind, explicit
 	}
 	if kind.node {
 		rule := ruleByName(s.rules, "node-build-output")
-		for _, rel := range []string{".next", "dist", "build", ".turbo", ".vite", "coverage"} {
-			addPathCandidate(filepath.Join(project, rel), rule, state)
+		for _, rel := range []string{".next", ".nuxt", "dist", "build", ".turbo", ".vite", "coverage"} {
+			addProjectPathCandidate(project, rel, "node", "package.json", rule, state)
 		}
-		addPathCandidate(filepath.Join(project, "node_modules"), ruleByName(s.rules, "node-modules"), state)
+		addProjectPathCandidate(project, "node_modules", "node", "package.json", ruleByName(s.rules, "node-modules"), state)
 	}
 	if kind.composer {
-		addPathCandidate(filepath.Join(project, "vendor"), ruleByName(s.rules, "composer-vendor"), state)
+		addProjectPathCandidate(project, "vendor", "composer", "composer.json", ruleByName(s.rules, "composer-vendor"), state)
 	}
 	if kind.rust {
 		addProjectPathCandidate(project, "target", "rust", "Cargo.toml", ruleByName(s.rules, "rust-target"), state)
 	}
+	if kind.swift {
+		addProjectPathCandidate(project, ".build", "swift", "Package.swift", ruleByName(s.rules, "swift-build"), state)
+	}
+	if kind.terraform {
+		addProjectPathCandidate(project, ".terraform", "terraform", "*.tf", ruleByName(s.rules, "terraform-working-dir"), state)
+	}
+	if kind.serverless {
+		addProjectPathCandidate(project, ".serverless", "serverless", "serverless.yml", ruleByName(s.rules, "serverless-build-state"), state)
+	}
+	if kind.gradle {
+		addProjectPathCandidate(project, "build", "gradle", "build.gradle", ruleByName(s.rules, "gradle-build-output"), state)
+	}
+	if kind.maven {
+		addProjectPathCandidate(project, "target", "maven", "pom.xml", ruleByName(s.rules, "maven-target"), state)
+	}
 	if explicit {
-		rule := ruleByName(s.rules, "explicit-package-cache")
 		for _, rel := range []string{"npm-cache", "pnpm-store", "yarn-cache", "composer-cache"} {
-			addPathCandidate(filepath.Join(project, rel), rule, state)
+			addPathCandidate(filepath.Join(project, rel), s.ruleForCachePath(filepath.Join(project, rel), scanRootPackageCache), state)
 		}
 	}
 }
@@ -219,14 +233,29 @@ func (s Scanner) addProjectCandidates(project string, kind projectKind, explicit
 func (s Scanner) addExplicitRootCandidates(root string, kind scanRootKind, state *scanState) {
 	switch kind {
 	case scanRootApplicationCache:
-		addChildrenCandidate("", root, ruleByName(s.rules, "explicit-application-cache"), state)
+		addCacheChildrenCandidate(root, kind, s, state)
 	case scanRootPackageCache:
-		addPathCandidate(root, ruleByName(s.rules, "explicit-package-cache"), state)
+		addPathCandidate(root, s.ruleForCachePath(root, kind), state)
 	}
 }
 
 func (s Scanner) specialLargeFileRule(path string) (Rule, bool) {
 	normalized := filepath.ToSlash(path)
+	lower := strings.ToLower(normalized)
+	if strings.Contains(normalized, "/Library/Application Support/com.tinyapp.DBngin/Engines/") {
+		if strings.Contains(normalized, "/data/") {
+			return ruleByName(s.rules, "dbngin-database-state"), true
+		}
+		if strings.Contains(normalized, "/broken/") || strings.Contains(normalized, "/recovery/") {
+			return ruleByName(s.rules, "dbngin-engine-recovery-state"), true
+		}
+	}
+	if strings.Contains(normalized, "/Library/Application Support/Google/Chrome/") && strings.Contains(normalized, "/OptimizationGuidePredictionModels/") {
+		return ruleByName(s.rules, "chrome-on-device-model"), true
+	}
+	if strings.Contains(lower, "/library/application support/cursor/") && strings.Contains(lower, "/snapshots/") {
+		return ruleByName(s.rules, "cursor-snapshot-state"), true
+	}
 	if strings.Contains(normalized, "/.ollama/models/blobs/") {
 		return ruleByName(s.rules, "ollama-model-blob"), true
 	}
@@ -237,6 +266,29 @@ func (s Scanner) specialLargeFileRule(path string) (Rule, bool) {
 		return ruleByName(s.rules, "lm-studio-model-file"), true
 	}
 	return Rule{}, false
+}
+
+func (s Scanner) ruleForCachePath(path string, kind scanRootKind) Rule {
+	normalized := filepath.ToSlash(path)
+	base := strings.ToLower(filepath.Base(path))
+	switch {
+	case strings.Contains(normalized, "/Library/Caches/Homebrew") || base == "homebrew":
+		return ruleByName(s.rules, "homebrew-cache")
+	case strings.Contains(normalized, "/Library/Caches/Cypress") || strings.Contains(normalized, "/.cache/Cypress") || base == "cypress":
+		return ruleByName(s.rules, "cypress-cache")
+	case strings.Contains(normalized, "/Library/Caches/ms-playwright") || strings.Contains(normalized, "/.cache/ms-playwright") || base == "ms-playwright":
+		return ruleByName(s.rules, "playwright-cache")
+	case strings.Contains(normalized, "/Library/Caches/puppeteer") || strings.Contains(normalized, "/.cache/puppeteer") || base == "puppeteer":
+		return ruleByName(s.rules, "puppeteer-cache")
+	case base == ".npm" || base == "npm-cache":
+		return ruleByName(s.rules, "npm-cache")
+	case strings.HasSuffix(normalized, "/.composer/cache") || base == "composer-cache":
+		return ruleByName(s.rules, "composer-cache")
+	case kind == scanRootPackageCache:
+		return ruleByName(s.rules, "explicit-package-cache")
+	default:
+		return ruleByName(s.rules, "explicit-application-cache")
+	}
 }
 
 func addGlobCandidates(project, pattern string, rule Rule, state *scanState) {
@@ -257,6 +309,20 @@ func addChildrenCandidate(project, rel string, rule Rule, state *scanState) {
 	}
 	for _, entry := range entries {
 		addPathCandidate(filepath.Join(dir, entry.Name()), rule, state)
+	}
+}
+
+func addCacheChildrenCandidate(root string, kind scanRootKind, scanner Scanner, state *scanState) {
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			state.addError(ScanError{Path: root, Error: err.Error()})
+		}
+		return
+	}
+	for _, entry := range entries {
+		path := filepath.Join(root, entry.Name())
+		addPathCandidate(path, scanner.ruleForCachePath(path, kind), state)
 	}
 }
 
@@ -310,25 +376,48 @@ func addCandidateWithProjectMetadata(path string, rule Rule, metadata projectMet
 }
 
 type projectKind struct {
-	laravel  bool
-	node     bool
-	composer bool
-	rust     bool
+	laravel    bool
+	node       bool
+	composer   bool
+	rust       bool
+	swift      bool
+	terraform  bool
+	serverless bool
+	gradle     bool
+	maven      bool
 }
 
 func (p projectKind) any() bool {
-	return p.laravel || p.node || p.composer || p.rust
+	return p.laravel || p.node || p.composer || p.rust || p.swift || p.terraform || p.serverless || p.gradle || p.maven
 }
 
 func detectProject(dir string) projectKind {
 	composerPath := filepath.Join(dir, "composer.json")
 	composer := fileExists(composerPath)
 	return projectKind{
-		laravel:  fileExists(filepath.Join(dir, "artisan")) && composerRequiresLaravel(composerPath),
-		node:     fileExists(filepath.Join(dir, "package.json")) || anyFileExists(dir, "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lockb"),
-		composer: composer,
-		rust:     fileExists(filepath.Join(dir, "Cargo.toml")),
+		laravel:    fileExists(filepath.Join(dir, "artisan")) && composerRequiresLaravel(composerPath),
+		node:       fileExists(filepath.Join(dir, "package.json")) || anyFileExists(dir, "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lockb"),
+		composer:   composer,
+		rust:       fileExists(filepath.Join(dir, "Cargo.toml")),
+		swift:      fileExists(filepath.Join(dir, "Package.swift")),
+		terraform:  hasFileWithSuffix(dir, ".tf"),
+		serverless: anyFileExists(dir, "serverless.yml", "serverless.yaml"),
+		gradle:     anyFileExists(dir, "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"),
+		maven:      fileExists(filepath.Join(dir, "pom.xml")),
 	}
+}
+
+func hasFileWithSuffix(dir string, suffix string) bool {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return false
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.HasSuffix(entry.Name(), suffix) {
+			return true
+		}
+	}
+	return false
 }
 
 type scanRootKind int

@@ -1,7 +1,7 @@
 BINARY := ratatoskr
 MAIN := ./cmd/ratatoskr
 DIST := dist
-VERSION ?= v1.0.0
+VERSION ?= v1.1.0
 
 .PHONY: test dist clean
 

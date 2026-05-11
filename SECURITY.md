@@ -23,7 +23,7 @@ Treat JSON and text reports as private. Redact paths before sharing them in publ
 
 ## Deletion Safety
 
-Ratatoskr v1.0.0 does not delete files.
+Ratatoskr v1.1.0 does not delete files.
 
 Future cleaning features must keep deletion explicit, trash-first where possible, and backed by concrete resolved paths. Unknown large files, personal data, databases, Docker volumes, and dangerous candidates must stay out of default cleanup flows.
 

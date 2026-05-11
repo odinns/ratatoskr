@@ -202,6 +202,40 @@ func TestGeneratedCandidatesIncludeDisplayOnlyMetadata(t *testing.T) {
 	}
 }
 
+func TestNodeAndComposerArtifactsIncludeProjectMetadata(t *testing.T) {
+	root := t.TempDir()
+	node := filepath.Join(root, "node")
+	composer := filepath.Join(root, "php")
+	writeFile(t, filepath.Join(node, "package.json"), "{}")
+	for _, rel := range []string{"node_modules/pkg/index.js", ".next/cache.bin", ".nuxt/cache.bin", ".turbo/state", ".vite/cache", "coverage/index.html", "dist/app.js", "build/app.js"} {
+		writeFile(t, filepath.Join(node, rel), "artifact")
+	}
+	writeFile(t, filepath.Join(composer, "composer.json"), "{}")
+	writeFile(t, filepath.Join(composer, "vendor/pkg/file.php"), "dep")
+
+	result := scanForTest(t, root)
+
+	resolvedNode, err := filepath.EvalSymlinks(node)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, rule := range []string{"node-build-output", "node-modules"} {
+		for _, candidate := range candidatesByRule(result, rule) {
+			if candidate.ProjectRoot != resolvedNode || candidate.ProjectType != "node" || candidate.MarkerFile != "package.json" || candidate.ArtifactPath == "" {
+				t.Fatalf("node candidate missing project metadata: %#v", candidate)
+			}
+		}
+	}
+	vendor := candidateByRule(result, "composer-vendor")
+	resolvedComposer, err := filepath.EvalSymlinks(composer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if vendor.ProjectRoot != resolvedComposer || vendor.ProjectType != "composer" || vendor.MarkerFile != "composer.json" || vendor.ArtifactPath != "vendor" {
+		t.Fatalf("composer candidate missing project metadata: %#v", vendor)
+	}
+}
+
 func TestRustTargetIsCautiousProjectArtifact(t *testing.T) {
 	root := t.TempDir()
 	writeFile(t, filepath.Join(root, "Cargo.toml"), "[package]\nname = \"demo\"\nversion = \"0.1.0\"\n")
@@ -238,6 +272,63 @@ func TestTargetDirectoryWithoutCargoTomlIsNotRustArtifact(t *testing.T) {
 	}
 }
 
+func TestExtraProjectArtifactsRequireTheirMarkerFiles(t *testing.T) {
+	root := t.TempDir()
+	swift := filepath.Join(root, "swift")
+	terraform := filepath.Join(root, "terraform")
+	serverless := filepath.Join(root, "serverless")
+	gradle := filepath.Join(root, "gradle")
+	maven := filepath.Join(root, "maven")
+	loose := filepath.Join(root, "loose")
+
+	writeFile(t, filepath.Join(swift, "Package.swift"), "// swift-tools-version: 5.9")
+	writeFile(t, filepath.Join(swift, ".build", "debug", "app"), "artifact")
+	writeFile(t, filepath.Join(terraform, "main.tf"), "terraform {}")
+	writeFile(t, filepath.Join(terraform, ".terraform", "providers", "provider"), "artifact")
+	writeFile(t, filepath.Join(serverless, "serverless.yml"), "service: demo")
+	writeFile(t, filepath.Join(serverless, ".serverless", "demo.zip"), "artifact")
+	writeFile(t, filepath.Join(gradle, "build.gradle"), "plugins {}")
+	writeFile(t, filepath.Join(gradle, "build", "classes", "Demo.class"), "artifact")
+	writeFile(t, filepath.Join(maven, "pom.xml"), "<project></project>")
+	writeFile(t, filepath.Join(maven, "target", "demo.jar"), "artifact")
+	writeFile(t, filepath.Join(loose, ".build", "thing"), "artifact")
+	writeFile(t, filepath.Join(loose, ".terraform", "thing"), "artifact")
+	writeFile(t, filepath.Join(loose, ".serverless", "thing"), "artifact")
+	writeFile(t, filepath.Join(loose, "build", "thing"), "artifact")
+	writeFile(t, filepath.Join(loose, "target", "thing"), "artifact")
+
+	result := scanForTest(t, root)
+
+	for _, test := range []struct {
+		rule        string
+		projectType string
+		marker      string
+		artifact    string
+	}{
+		{"swift-build", "swift", "Package.swift", ".build"},
+		{"terraform-working-dir", "terraform", "*.tf", ".terraform"},
+		{"serverless-build-state", "serverless", "serverless.yml", ".serverless"},
+		{"gradle-build-output", "gradle", "build.gradle", "build"},
+		{"maven-target", "maven", "pom.xml", "target"},
+	} {
+		candidate := candidateByRule(result, test.rule)
+		if candidate.Path == "" {
+			t.Fatalf("missing %s candidate: %#v", test.rule, result.Candidates)
+		}
+		if candidate.ProjectType != test.projectType || candidate.MarkerFile != test.marker || candidate.ArtifactPath != test.artifact {
+			t.Fatalf("%s missing project metadata: %#v", test.rule, candidate)
+		}
+		if candidate.Risk != RiskCautious || candidate.CleanableByDefault {
+			t.Fatalf("%s should be cautious and not default-cleanable: %#v", test.rule, candidate)
+		}
+	}
+	for _, candidate := range result.Candidates {
+		if strings.Contains(candidate.Path, loose) {
+			t.Fatalf("loose artifact without marker should not be a candidate: %#v", candidate)
+		}
+	}
+}
+
 func TestExplicitApplicationCacheRootReportsCacheChildren(t *testing.T) {
 	root := filepath.Join(t.TempDir(), "Library", "Caches")
 	writeFile(t, filepath.Join(root, "Homebrew", "downloads", "bottle.tar.gz"), "cache")
@@ -245,12 +336,14 @@ func TestExplicitApplicationCacheRootReportsCacheChildren(t *testing.T) {
 
 	result := scanForTest(t, root)
 
-	cacheRule := candidateByRule(result, "explicit-application-cache")
-	if cacheRule.Path == "" {
-		t.Fatalf("expected explicit cache candidates, got %#v", result.Candidates)
-	}
-	if cacheRule.Risk != RiskCautious || cacheRule.CleanableByDefault {
-		t.Fatalf("application caches should be cautious and not default-cleanable: %#v", cacheRule)
+	for _, rule := range []string{"homebrew-cache", "playwright-cache"} {
+		cacheRule := candidateByRule(result, rule)
+		if cacheRule.Path == "" {
+			t.Fatalf("expected %s candidate, got %#v", rule, result.Candidates)
+		}
+		if cacheRule.Risk != RiskCautious || cacheRule.CleanableByDefault {
+			t.Fatalf("application caches should be cautious and not default-cleanable: %#v", cacheRule)
+		}
 	}
 }
 
@@ -260,7 +353,7 @@ func TestExplicitPackageCacheRootReportsWholeRoot(t *testing.T) {
 
 	result := scanForTest(t, root)
 
-	candidate := candidateByRule(result, "explicit-package-cache")
+	candidate := candidateByRule(result, "npm-cache")
 	resolvedRoot, err := filepath.EvalSymlinks(root)
 	if err != nil {
 		t.Fatal(err)
@@ -270,6 +363,53 @@ func TestExplicitPackageCacheRootReportsWholeRoot(t *testing.T) {
 	}
 	if candidate.Risk != RiskCautious || candidate.CleanableByDefault {
 		t.Fatalf("package cache should be cautious and not default-cleanable: %#v", candidate)
+	}
+}
+
+func TestNamedCacheRulesWinBeforeBroadFallbacks(t *testing.T) {
+	root := filepath.Join(t.TempDir(), "Library", "Caches")
+	writeFile(t, filepath.Join(root, "Homebrew", "downloads", "bottle.tar.gz"), "cache")
+	writeFile(t, filepath.Join(root, "Cypress", "13.0.0", "binary"), "cache")
+	writeFile(t, filepath.Join(root, "ms-playwright", "chromium", "browser"), "cache")
+	writeFile(t, filepath.Join(root, "puppeteer", "chrome", "browser"), "cache")
+	writeFile(t, filepath.Join(root, "MysteryApp", "cache.bin"), "cache")
+
+	result := scanForTest(t, root)
+
+	for _, rule := range []string{"homebrew-cache", "cypress-cache", "playwright-cache", "puppeteer-cache", "explicit-application-cache"} {
+		candidate := candidateByRule(result, rule)
+		if candidate.Path == "" {
+			t.Fatalf("expected %s candidate, got %#v", rule, result.Candidates)
+		}
+		if candidate.CleanableByDefault || candidate.Risk != RiskCautious {
+			t.Fatalf("%s should stay cautious and non-cleanable: %#v", rule, candidate)
+		}
+	}
+}
+
+func TestKnownDangerousStateRulesBeatUnknownLargeFile(t *testing.T) {
+	root := t.TempDir()
+	dbnginData := filepath.Join(root, "Library", "Application Support", "com.tinyapp.DBngin", "Engines", "mysql", "data", "ibdata1")
+	dbnginRecovery := filepath.Join(root, "Library", "Application Support", "com.tinyapp.DBngin", "Engines", "mysql", "recovery", "ibdata1")
+	chromeModel := filepath.Join(root, "Library", "Application Support", "Google", "Chrome", "Default", "OptimizationGuidePredictionModels", "model.bin")
+	cursorSnapshot := filepath.Join(root, "Library", "Application Support", "Cursor", "User", "History", "snapshots", "state.bin")
+	for _, path := range []string{dbnginData, dbnginRecovery, chromeModel, cursorSnapshot} {
+		writeAllocatedFile(t, path, unknownLargeFileMin+1)
+	}
+
+	result := scanForTest(t, root)
+
+	for _, rule := range []string{"dbngin-database-state", "dbngin-engine-recovery-state", "chrome-on-device-model", "cursor-snapshot-state"} {
+		candidate := candidateByRule(result, rule)
+		if candidate.Path == "" {
+			t.Fatalf("expected %s candidate, got %#v", rule, result.Candidates)
+		}
+		if candidate.CleanableByDefault || candidate.Risk == RiskSafe {
+			t.Fatalf("%s must not be safe/default-cleanable: %#v", rule, candidate)
+		}
+	}
+	if hasCandidateRule(result, "unknown-large-file") {
+		t.Fatalf("known state paths should not fall back to unknown-large-file: %#v", result.Candidates)
 	}
 }
 
@@ -395,6 +535,16 @@ func candidateByRule(result ScanResult, rule string) Candidate {
 		}
 	}
 	return Candidate{}
+}
+
+func candidatesByRule(result ScanResult, rule string) []Candidate {
+	candidates := []Candidate{}
+	for _, candidate := range result.Candidates {
+		if candidate.Rule == rule {
+			candidates = append(candidates, candidate)
+		}
+	}
+	return candidates
 }
 
 func assertNoCandidateContains(t *testing.T, result ScanResult, fragment string) {

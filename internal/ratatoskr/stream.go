@@ -92,9 +92,9 @@ func (s Scanner) streamRoot(root string, kind scanRootKind, explicit bool, repor
 	if explicit {
 		switch kind {
 		case scanRootApplicationCache:
-			streamChildrenCandidate("", root, ruleByName(s.rules, "explicit-application-cache"), report)
+			streamCacheChildrenCandidate(root, kind, s, report)
 		case scanRootPackageCache:
-			streamPathCandidate(root, ruleByName(s.rules, "explicit-package-cache"), report)
+			streamPathCandidate(root, s.ruleForCachePath(root, kind), report)
 		}
 	}
 
@@ -164,21 +164,36 @@ func (s Scanner) streamProjectCandidates(project string, kind projectKind, expli
 	}
 	if kind.node {
 		rule := ruleByName(s.rules, "node-build-output")
-		for _, rel := range []string{".next", "dist", "build", ".turbo", ".vite", "coverage"} {
-			streamPathCandidate(filepath.Join(project, rel), rule, report)
+		for _, rel := range []string{".next", ".nuxt", "dist", "build", ".turbo", ".vite", "coverage"} {
+			streamProjectPathCandidate(project, rel, "node", "package.json", rule, report)
 		}
-		streamPathCandidate(filepath.Join(project, "node_modules"), ruleByName(s.rules, "node-modules"), report)
+		streamProjectPathCandidate(project, "node_modules", "node", "package.json", ruleByName(s.rules, "node-modules"), report)
 	}
 	if kind.composer {
-		streamPathCandidate(filepath.Join(project, "vendor"), ruleByName(s.rules, "composer-vendor"), report)
+		streamProjectPathCandidate(project, "vendor", "composer", "composer.json", ruleByName(s.rules, "composer-vendor"), report)
 	}
 	if kind.rust {
 		streamProjectPathCandidate(project, "target", "rust", "Cargo.toml", ruleByName(s.rules, "rust-target"), report)
 	}
+	if kind.swift {
+		streamProjectPathCandidate(project, ".build", "swift", "Package.swift", ruleByName(s.rules, "swift-build"), report)
+	}
+	if kind.terraform {
+		streamProjectPathCandidate(project, ".terraform", "terraform", "*.tf", ruleByName(s.rules, "terraform-working-dir"), report)
+	}
+	if kind.serverless {
+		streamProjectPathCandidate(project, ".serverless", "serverless", "serverless.yml", ruleByName(s.rules, "serverless-build-state"), report)
+	}
+	if kind.gradle {
+		streamProjectPathCandidate(project, "build", "gradle", "build.gradle", ruleByName(s.rules, "gradle-build-output"), report)
+	}
+	if kind.maven {
+		streamProjectPathCandidate(project, "target", "maven", "pom.xml", ruleByName(s.rules, "maven-target"), report)
+	}
 	if explicit {
-		rule := ruleByName(s.rules, "explicit-package-cache")
 		for _, rel := range []string{"npm-cache", "pnpm-store", "yarn-cache", "composer-cache"} {
-			streamPathCandidate(filepath.Join(project, rel), rule, report)
+			path := filepath.Join(project, rel)
+			streamPathCandidate(path, s.ruleForCachePath(path, scanRootPackageCache), report)
 		}
 	}
 }
@@ -201,6 +216,20 @@ func streamChildrenCandidate(project, rel string, rule Rule, report *streamRepor
 	}
 	for _, entry := range entries {
 		streamPathCandidate(filepath.Join(dir, entry.Name()), rule, report)
+	}
+}
+
+func streamCacheChildrenCandidate(root string, kind scanRootKind, scanner Scanner, report *streamReport) {
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			report.addError(ScanError{Path: root, Error: err.Error()})
+		}
+		return
+	}
+	for _, entry := range entries {
+		path := filepath.Join(root, entry.Name())
+		streamPathCandidate(path, scanner.ruleForCachePath(path, kind), report)
 	}
 }
 

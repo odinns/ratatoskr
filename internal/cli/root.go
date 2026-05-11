@@ -236,8 +236,10 @@ func writeTextSummary(out io.Writer, summary ratatoskr.Summary, limit int, targe
 
 	writeCandidateSection(out, "Safe generated waste", summary.TopCandidatesByRisk(ratatoskr.RiskSafe, limit))
 	writeCandidateSection(out, "Cautious rebuildable waste", summary.CautiousRebuildableCandidates(limit))
+	writeProjectArtifactSection(out, summary.ProjectArtifactGroups(limit))
 	writeCandidateSection(out, "Manual review", summary.ManualReviewCandidates(limit))
 	writeCandidateSection(out, "Report-only / do-not-touch", summary.TopCandidatesByRisk(ratatoskr.RiskDangerous, limit))
+	writeReportQualityHints(out, summary.ReportQualityHints())
 	if targetBytes > 0 {
 		writeTargetProjection(out, summary, targetBytes)
 	}
@@ -246,9 +248,13 @@ func writeTextSummary(out io.Writer, summary ratatoskr.Summary, limit int, targe
 func writeSummaryJSON(out io.Writer, summary ratatoskr.Summary, targetBytes int64) error {
 	payload := struct {
 		ratatoskr.ScanResult
-		TargetProjection *ratatoskr.TargetProjection `json:"target_projection,omitempty"`
+		ProjectArtifactGroups []ratatoskr.ProjectArtifactGroup `json:"project_artifact_groups"`
+		ReportQualityHints    []ratatoskr.ReportQualityHint    `json:"report_quality_hints"`
+		TargetProjection      *ratatoskr.TargetProjection      `json:"target_projection,omitempty"`
 	}{
-		ScanResult: summary.Result,
+		ScanResult:            summary.Result,
+		ProjectArtifactGroups: summary.ProjectArtifactGroups(0),
+		ReportQualityHints:    summary.ReportQualityHints(),
 	}
 	if targetBytes > 0 {
 		projection := summary.TargetProjection(targetBytes)
@@ -257,6 +263,38 @@ func writeSummaryJSON(out io.Writer, summary ratatoskr.Summary, targetBytes int6
 	encoder := json.NewEncoder(out)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(payload)
+}
+
+func writeProjectArtifactSection(out io.Writer, groups []ratatoskr.ProjectArtifactGroup) {
+	fmt.Fprintln(out, "\nProject artifacts by project")
+	if len(groups) == 0 {
+		fmt.Fprintln(out, "  none")
+		return
+	}
+	for _, group := range groups {
+		projectType := displayValue(group.ProjectType)
+		fmt.Fprintf(out, "  %8s  %-10s  %s\n", humanBytes(group.TotalBytes), projectType, group.ProjectRoot)
+		for _, candidate := range group.Candidates {
+			fmt.Fprintf(out, "            %-28s  rebuild: %-12s  durability: %-24s  %s\n", candidate.Rule, displayValue(candidate.RebuildCost), displayValue(candidate.ReclaimDurability), candidate.ArtifactPath)
+		}
+	}
+}
+
+func writeReportQualityHints(out io.Writer, hints []ratatoskr.ReportQualityHint) {
+	if len(hints) == 0 {
+		return
+	}
+	fmt.Fprintln(out, "\nReport quality hints")
+	for _, hint := range hints {
+		detail := ""
+		if hint.Count > 0 {
+			detail = fmt.Sprintf(" (%d)", hint.Count)
+		}
+		if hint.Bytes > 0 {
+			detail = fmt.Sprintf(" (%d, %s)", hint.Count, humanBytes(hint.Bytes))
+		}
+		fmt.Fprintf(out, "  %s%s: %s\n", hint.Kind, detail, hint.Message)
+	}
 }
 
 func writeCandidateSection(out io.Writer, title string, candidates []ratatoskr.Candidate) {
@@ -278,8 +316,12 @@ func writeTargetProjection(out io.Writer, summary ratatoskr.Summary, targetBytes
 		fmt.Fprintln(out, "  No safe or cautious candidates are available for this projection.")
 		return
 	}
-	for _, candidate := range projection.RecommendedCandidates {
-		fmt.Fprintf(out, "  %8s  %-9s  %-28s  rebuild: %-12s  durability: %-12s  %s\n", humanBytes(candidate.SizeBytes), candidate.Risk, candidate.Rule, displayValue(candidate.RebuildCost), displayValue(candidate.ReclaimDurability), candidate.Path)
+	for index, candidate := range projection.RecommendedCandidates {
+		runningTotal := projection.ProjectedBytes
+		if index < len(projection.RunningTotalBytes) {
+			runningTotal = projection.RunningTotalBytes[index]
+		}
+		fmt.Fprintf(out, "  %8s  total %8s  %-9s  %-28s  rebuild: %-12s  durability: %-24s  %s\n", humanBytes(candidate.SizeBytes), humanBytes(runningTotal), candidate.Risk, candidate.Rule, displayValue(candidate.RebuildCost), displayValue(candidate.ReclaimDurability), candidate.Path)
 		if candidate.Consequence != "" {
 			fmt.Fprintf(out, "    consequence: %s\n", candidate.Consequence)
 		}

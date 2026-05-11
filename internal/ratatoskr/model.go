@@ -22,6 +22,9 @@ const (
 	CategoryUnknownLargeFiles Category = "unknown-large-files"
 	CategoryReportOnly        Category = "report-only"
 	CategoryLocalAIModels     Category = "local-ai-models"
+	CategoryDatabaseState     Category = "database-state"
+	CategoryBrowserModels     Category = "browser-models"
+	CategoryApplicationState  Category = "application-state"
 )
 
 type Rule struct {
@@ -99,7 +102,22 @@ type TargetProjection struct {
 	RemainingBytes          int64       `json:"remaining_bytes"`
 	TargetMet               bool        `json:"target_met"`
 	RecommendedCandidates   []Candidate `json:"recommended_candidates"`
+	RunningTotalBytes       []int64     `json:"running_total_bytes"`
 	ExcludedReportOnlyBytes int64       `json:"excluded_report_only_bytes"`
 	ExcludedReportOnlyCount int         `json:"excluded_report_only_count"`
 	Note                    string      `json:"note"`
+}
+
+type ProjectArtifactGroup struct {
+	ProjectRoot string      `json:"project_root"`
+	ProjectType string      `json:"project_type"`
+	TotalBytes  int64       `json:"total_bytes"`
+	Candidates  []Candidate `json:"candidates"`
+}
+
+type ReportQualityHint struct {
+	Kind    string `json:"kind"`
+	Message string `json:"message"`
+	Count   int    `json:"count,omitempty"`
+	Bytes   int64  `json:"bytes,omitempty"`
 }

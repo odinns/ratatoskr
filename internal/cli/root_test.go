@@ -196,7 +196,7 @@ func TestTargetSpaceProjectionRecommendsSafeThenCautiousOnly(t *testing.T) {
 	if !strings.Contains(text, "Target-space projection") || !strings.Contains(text, "safe-a") || !strings.Contains(text, "cautious-a") {
 		t.Fatalf("target projection missing expected candidates:\n%s", text)
 	}
-	for _, fragment := range []string{"Safe selected: 100 B", "Cautious selected: 80 B", "rebuild:", "durability:", "consequence:", "inspect:"} {
+	for _, fragment := range []string{"Safe selected: 100 B", "Cautious selected: 80 B", "total", "rebuild:", "durability:", "consequence:", "inspect:"} {
 		if !strings.Contains(text, fragment) {
 			t.Fatalf("target projection missing %q:\n%s", fragment, text)
 		}
@@ -204,6 +204,66 @@ func TestTargetSpaceProjectionRecommendsSafeThenCautiousOnly(t *testing.T) {
 	projection := text[strings.Index(text, "Target-space projection"):]
 	if strings.Contains(projection, "dangerous-a") || strings.Contains(projection, "dangerous") || strings.Contains(projection, "ready to remove") || strings.Contains(projection, "deletion list") || strings.Contains(projection, "ratatoskr clean") {
 		t.Fatalf("target projection should not include dangerous/actionable cleanup wording:\n%s", text)
+	}
+}
+
+func TestSummaryShowsProjectGroupsAndQualityHints(t *testing.T) {
+	root := t.TempDir()
+	reportPath := filepath.Join(root, "report.json")
+	writeFile(t, reportPath, `{
+  "schema_version": "ratatoskr.scan.v1",
+  "generated_at": "2026-05-10T12:00:00Z",
+  "scan_roots": ["/tmp/example"],
+  "totals": {},
+  "candidates": [
+    {"path":"/tmp/example-a/dist","size_bytes":100,"apparent_size_bytes":100,"category":"builds","risk":"safe","rule":"node-build-output","reason":"x","consequence":"y","cleanable_by_default":true,"project_root":"/tmp/example-a","project_type":"node","marker_file":"package.json","artifact_path":"dist","rebuild_cost":"low","reclaim_durability":"temporary"},
+    {"path":"/tmp/example-b/node_modules","size_bytes":300,"apparent_size_bytes":300,"category":"dependencies","risk":"cautious","rule":"node-modules","reason":"x","consequence":"y","cleanable_by_default":false,"project_root":"/tmp/example-b","project_type":"node","marker_file":"package.json","artifact_path":"node_modules","rebuild_cost":"medium","reclaim_durability":"until next install"},
+    {"path":"/tmp/cache/Mystery","size_bytes":500,"apparent_size_bytes":500,"category":"caches","risk":"cautious","rule":"explicit-application-cache","reason":"x","consequence":"y","cleanable_by_default":false}
+  ],
+  "skipped": [{"path":"/tmp/alias","reason":"duplicate of /tmp/real"}],
+  "errors": [{"path":"/tmp/nope","error":"permission denied"}],
+  "active_rules": []
+}`)
+
+	var out bytes.Buffer
+	cmd := NewRootCommandWithOutput(&out)
+	cmd.SetErr(&out)
+	cmd.SetArgs([]string{"summary", "--file", reportPath, "--limit", "10"})
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("summary failed: %v\n%s", err, out.String())
+	}
+	text := out.String()
+	for _, fragment := range []string{"Project artifacts by project", "/tmp/example-b", "node_modules", "durability:", "Report quality hints", "duplicate-paths", "scan-errors", "broad-cache-fallbacks"} {
+		if !strings.Contains(text, fragment) {
+			t.Fatalf("summary output missing %q:\n%s", fragment, text)
+		}
+	}
+}
+
+func TestSummaryJSONIncludesProjectGroupsAndQualityHints(t *testing.T) {
+	reportPath := writeSummaryReport(t)
+
+	var out bytes.Buffer
+	cmd := NewRootCommandWithOutput(&out)
+	cmd.SetErr(&out)
+	cmd.SetArgs([]string{"summary", "--file", reportPath, "--target", "150B", "--format", "json"})
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("summary failed: %v\n%s", err, out.String())
+	}
+
+	var payload struct {
+		ProjectArtifactGroups []ratatoskr.ProjectArtifactGroup `json:"project_artifact_groups"`
+		ReportQualityHints    []ratatoskr.ReportQualityHint    `json:"report_quality_hints"`
+		TargetProjection      *ratatoskr.TargetProjection      `json:"target_projection"`
+	}
+	if err := json.Unmarshal(out.Bytes(), &payload); err != nil {
+		t.Fatalf("summary emitted invalid JSON: %v\n%s", err, out.String())
+	}
+	if payload.ProjectArtifactGroups == nil || payload.ReportQualityHints == nil {
+		t.Fatalf("summary JSON should include summary-specific arrays: %#v", payload)
+	}
+	if payload.TargetProjection == nil || len(payload.TargetProjection.RunningTotalBytes) == 0 {
+		t.Fatalf("summary JSON target projection should include running totals: %#v", payload.TargetProjection)
 	}
 }
 

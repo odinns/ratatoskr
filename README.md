@@ -2,12 +2,12 @@
 
 Ratatoskr is a conservative local disk scanner for developer machines.
 
-It finds generated waste, explains why it was flagged, shows the rebuild cost, and helps you plan enough reclaimed space without deleting anything. v1.0.0 is read-only. No clean command. No background agent. No mystery button with teeth.
+It finds generated waste, explains why it was flagged, shows the rebuild cost, and helps you plan enough reclaimed space without deleting anything. v1.1.0 is read-only. No clean command. No background agent. No mystery button with teeth.
 
 ## What It Does
 
 - Scans project trees and explicit paths.
-- Flags known generated waste from Laravel, Node, Composer, Rust, package caches, app caches, and local AI model stores.
+- Flags known generated waste from Laravel, Node, Composer, Rust, Swift, Terraform, Serverless, Gradle, Maven, named caches, and local model/state stores.
 - Labels each candidate as `safe`, `cautious`, or `dangerous`.
 - Explains the rule, reason, consequence, rebuild cost, durability, and default cleanability.
 - Produces JSON reports for humans, scripts, and local agents.
@@ -16,7 +16,7 @@ It finds generated waste, explains why it was flagged, shows the rebuild cost, a
 
 ## What It Refuses
 
-- It does not delete files in v1.0.0.
+- It does not delete files in v1.1.0.
 - It does not scan your whole home directory by default.
 - It does not treat large files as trash.
 - It does not infer-delete personal files.
@@ -35,13 +35,13 @@ brew install odinns/tap/ratatoskr
 With Go:
 
 ```sh
-go install github.com/odinns/ratatoskr/cmd/ratatoskr@v1.0.0
+go install github.com/odinns/ratatoskr/cmd/ratatoskr@v1.1.0
 ```
 
 With a release binary on Apple Silicon macOS:
 
 ```sh
-curl -L -o ratatoskr https://github.com/odinns/ratatoskr/releases/download/v1.0.0/ratatoskr_v1.0.0_darwin_arm64
+curl -L -o ratatoskr https://github.com/odinns/ratatoskr/releases/download/v1.1.0/ratatoskr_v1.1.0_darwin_arm64
 chmod +x ratatoskr
 sudo mv ratatoskr /usr/local/bin/
 ```
@@ -49,7 +49,7 @@ sudo mv ratatoskr /usr/local/bin/
 With a release binary on Intel macOS:
 
 ```sh
-curl -L -o ratatoskr https://github.com/odinns/ratatoskr/releases/download/v1.0.0/ratatoskr_v1.0.0_darwin_amd64
+curl -L -o ratatoskr https://github.com/odinns/ratatoskr/releases/download/v1.1.0/ratatoskr_v1.1.0_darwin_amd64
 chmod +x ratatoskr
 sudo mv ratatoskr /usr/local/bin/
 ```
@@ -57,7 +57,15 @@ sudo mv ratatoskr /usr/local/bin/
 With a release binary on Linux amd64:
 
 ```sh
-curl -L -o ratatoskr https://github.com/odinns/ratatoskr/releases/download/v1.0.0/ratatoskr_v1.0.0_linux_amd64
+curl -L -o ratatoskr https://github.com/odinns/ratatoskr/releases/download/v1.1.0/ratatoskr_v1.1.0_linux_amd64
+chmod +x ratatoskr
+sudo mv ratatoskr /usr/local/bin/
+```
+
+With a release binary on Linux arm64:
+
+```sh
+curl -L -o ratatoskr https://github.com/odinns/ratatoskr/releases/download/v1.1.0/ratatoskr_v1.1.0_linux_arm64
 chmod +x ratatoskr
 sudo mv ratatoskr /usr/local/bin/
 ```
@@ -121,6 +129,8 @@ ratatoskr summary --file ratatoskr-report.json --target 17GB
 
 The projection picks safe generated waste first. If that is not enough, it adds cautious rebuildable candidates. Report-only paths are excluded from the action path and shown as warnings.
 
+The summary also groups project artifacts by `project_root`, shows running totals in target mode, and calls out report-quality problems such as duplicate skips, scan errors, and broad fallback cache rules doing too much of the work.
+
 That output is a plan. It is not permission to delete blindly.
 
 ## Agent Skill
@@ -132,6 +142,8 @@ skills/ratatoskr-report-analysis/SKILL.md
 ```
 
 Use it with Codex, Claude, Gemini, or another local agent that can read files. Give the agent the skill and the JSON report. It should rank likely safe targets, cautious rebuildable targets, manual-review targets, and do-not-touch paths.
+
+If you use `summary --format json`, the agent also gets `project_artifact_groups`, `report_quality_hints`, and target `running_total_bytes`.
 
 Example prompt:
 

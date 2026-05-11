@@ -54,6 +54,9 @@ If the report path exists locally, read it directly. Prefer `jq` or a small scri
    - error count
 4. Look for report quality problems before cleanup advice:
    - duplicate physical paths
+   - skipped duplicate paths
+   - scan errors
+   - broad fallback cache rules dominating the result
    - suspicious sparse-file sizes
    - system paths mixed with user paths
    - mounted volumes included unexpectedly
@@ -81,6 +84,12 @@ Examples:
 
 - `node_modules`
 - `vendor`
+- Rust `target`
+- Swift `.build`
+- Terraform `.terraform`
+- Serverless `.serverless`
+- Gradle `build`
+- Maven `target`
 - package-manager caches
 - Playwright, Puppeteer, Cypress, Homebrew caches
 
@@ -149,6 +158,8 @@ Still needed: 9.6 GB
 Best cautious target: node_modules across old projects, 10.8 GB
 Decision: safe cleanup alone is not enough; review the cautious dependency folders next.
 ```
+
+If Ratatoskr summary JSON includes `project_artifact_groups`, use it. It is the fastest way to see which project folder is carrying the most rebuildable weight. If it includes `report_quality_hints`, surface those before giving cleanup advice.
 
 ## Command Advice
 
