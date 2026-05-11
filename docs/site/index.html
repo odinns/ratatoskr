@@ -3,13 +3,16 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ratatoskr - Danger squirrel. Safe tool.</title>
-    <meta name="description" content="Ratatoskr is a suspicious local disk cleaner that finds generated waste, explains the risk, and prunes only when told.">
-    <meta property="og:title" content="Ratatoskr - Danger squirrel. Safe tool.">
-    <meta property="og:description" content="Find generated waste. Explain the risk. Prune only when told.">
+    <title>Ratatoskr - Open-source disk cleaner for developers</title>
+    <meta name="description" content="Ratatoskr is a free, open-source, AI-assisted disk cleaner for developers. It finds generated waste, explains the risk, and prunes only when told.">
+    <meta property="og:title" content="Ratatoskr - Open-source disk cleaner for developers">
+    <meta property="og:description" content="Free, open-source, AI-assisted cleanup for developer machines. Evidence first. Deletion only when told.">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#120f0c">
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
     <script>document.documentElement.classList.add('js');</script>
     <link rel="stylesheet" href="assets/site.css">
   </head>
@@ -22,6 +25,7 @@
         <span>Ratatoskr</span>
       </a>
       <nav class="site-nav" aria-label="Main navigation">
+        <a class="nav-link" href="#position">Position</a>
         <a class="nav-link" href="#rescue">17 GB</a>
         <a class="nav-link" href="#problem">Problem</a>
         <a class="nav-link" href="#why">Why</a>
@@ -36,14 +40,21 @@
     <main id="main">
       <section class="hero section-shell" data-reveal>
         <div class="hero-copy">
-          <p class="kicker">Danger squirrel. Safe tool.</p>
-          <h1>Ratatoskr runs the tree.</h1>
-          <p class="lede">A suspicious little disk cleaner that finds generated waste, explains the risk, and prunes only when told.</p>
+          <p class="kicker">Free. Open source. Built for developers.</p>
+          <h1>Developers disk cleaner. No bullshit.</h1>
+          <p class="lede">Ratatoskr finds generated waste, explains the risk, and prunes only when told. Evidence first. Deletion never by surprise.</p>
           <div class="hero-actions">
             <a class="button button-primary" href="#commands">Install</a>
             <a class="button button-secondary" href="#risk">Read the safety model</a>
           </div>
-          <p class="trust-line">Scan is read-only. Clean is explicit. Unknown files are report-only.</p>
+          <div class="quick-command" aria-label="First command to try">
+            <code>ratatoskr scan --path ~/Code</code>
+          </div>
+          <div class="trust-contract" aria-label="Ratatoskr safety contract">
+            <span>Read-only scan</span>
+            <span>Explicit clean</span>
+            <span>Unknown stays report-only</span>
+          </div>
         </div>
 
         <div class="hero-stage" aria-label="Ratatoskr scan result scene">
@@ -59,6 +70,72 @@
 9.8 GB   requires explicit selection
 2.5 GB   report-only</code></pre>
           </div>
+          <div class="scan-breakdown" aria-label="Example scan risk breakdown">
+            <div class="scan-breakdown-item safe">
+              <span>safe</span>
+              <strong>6.1 GB</strong>
+            </div>
+            <div class="scan-breakdown-item cautious">
+              <span>cautious</span>
+              <strong>9.8 GB</strong>
+            </div>
+            <div class="scan-breakdown-item report">
+              <span>report-only</span>
+              <strong>2.5 GB</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-shell proof-section" aria-label="Ratatoskr proof points" data-reveal>
+        <div class="decision-flow" aria-label="Ratatoskr decision flow">
+          <span>scan</span>
+          <span>report</span>
+          <span>agent advice</span>
+          <strong>you decide</strong>
+        </div>
+        <div class="refusal-panel">
+          <div>
+            <p class="kicker">Refusal model</p>
+            <h2>It matters what Ratatoskr refuses to touch.</h2>
+          </div>
+          <div class="refusal-list" aria-label="Examples of paths Ratatoskr refuses to clean by default">
+            <article>
+              <span>database.sqlite</span>
+              <strong>report-only</strong>
+            </article>
+            <article>
+              <span>Docker volume</span>
+              <strong>dangerous</strong>
+            </article>
+            <article>
+              <span>~/Pictures</span>
+              <strong>protected</strong>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-shell position-section" id="position" data-reveal>
+        <div class="section-intro">
+          <p class="kicker">Position</p>
+          <h2>Not a magic delete button. A local disk auditor with judgment.</h2>
+          <p>Ratatoskr is built for developer machines: project folders, framework caches, build output, dependency trees, local AI models, and the awkward junk normal cleaners do not understand.</p>
+          <p>The CLI scans your disk and produces hard evidence. The AI skill reads the report, ranks what is worth touching, and calls out what can hurt. It does not delete. It does not guess.</p>
+        </div>
+        <div class="position-grid">
+          <article>
+            <h3>Open source and free</h3>
+            <p>No cleanup paywall. No subscription trap. The rules are inspectable because a cleaner touching local paths should not be a black box.</p>
+          </article>
+          <article>
+            <h3>Built for developers</h3>
+            <p>Laravel logs, Node builds, Composer vendors, package caches, Docker-adjacent risk, local models, and dependency folders with reacquisition cost.</p>
+          </article>
+          <article>
+            <h3>AI-assisted, not AI-triggered</h3>
+            <p>The agent explains the report and suggests the next move. Ratatoskr keeps deletion behind explicit user intent.</p>
+          </article>
         </div>
       </section>
 
@@ -95,8 +172,8 @@ database dumps, Docker volumes, unknown large files</code></pre>
           </article>
           <article>
             <span>02</span>
-            <h3>Ask the skill for judgment</h3>
-            <p>The report-analysis skill ranks cleanup targets, calls out risk, and turns the landfill tour into a short action list.</p>
+            <h3>Ask the AI skill for judgment</h3>
+            <p>The report-analysis skill ranks cleanup targets, calls out risk, and turns the landfill tour into a short action list. It advises. It does not pull the lever.</p>
           </article>
           <article>
             <span>03</span>
@@ -155,6 +232,10 @@ database dumps, Docker volumes, unknown large files</code></pre>
             <h3>Yeah, I built it for my problem.</h3>
             <p>I needed enough space to process a dataset. Ratatoskr exists for that moment: find the generated waste, explain the risk, free enough space, stop.</p>
           </article>
+          <article>
+            <h3>Yeah, AI belongs here carefully.</h3>
+            <p>Not as a delete engine. As a second set of eyes on a private local report: what is safe, what is expensive, what should stay exactly where it is.</p>
+          </article>
         </div>
       </section>
 
@@ -181,7 +262,7 @@ database dumps, Docker volumes, unknown large files</code></pre>
             <ul>
               <li>node_modules</li>
               <li>vendor</li>
-              <li>package stores</li>
+              <li>local AI models</li>
             </ul>
           </article>
           <article class="risk-card report-card">
@@ -218,14 +299,18 @@ database dumps, Docker volumes, unknown large files</code></pre>
 
       <section class="section-shell skill-section" id="skill" data-reveal>
         <div class="section-intro">
-          <p class="kicker">Agent skill</p>
-          <h2>The scanner finds candidates. The skill says what is worth touching.</h2>
-          <p><code>ratatoskr-report-analysis</code> reads Ratatoskr JSON reports, validates the scan, ranks cleanup targets, and refuses to turn “large” into “delete”. Good. That sentence should make every one-click cleaner feel personally attacked.</p>
+          <p class="kicker">Included agent skill</p>
+          <h2>Ratatoskr ships with a <span class="skill-name">SKILL.md</span> your AI agent can use.</h2>
+          <p><code class="skill-path">skills/ratatoskr-report-analysis/SKILL.md</code> is a portable instruction file for Codex, Claude, Gemini, or any agent that can read local project instructions. The CLI scans. The skill reads the JSON report, ranks cleanup targets, and keeps deletion behind you.</p>
         </div>
         <div class="skill-layout">
           <div class="skill-card">
-            <h3>What it accepts</h3>
-            <p>A report path, pasted JSON, summarized output, or a partial streamed report from an interrupted scan.</p>
+            <h3>What it is</h3>
+            <p>A plain <code>SKILL.md</code> bundled with the repo. No hosted service. No API dependency. Just instructions an agent can load beside the report.</p>
+          </div>
+          <div class="skill-card">
+            <h3>Who can use it</h3>
+            <p>Codex skills, Claude project instructions, Gemini agents, or another local assistant workflow. If it can read a file and reason over JSON, it can use this.</p>
           </div>
           <div class="skill-card">
             <h3>What it checks first</h3>
@@ -238,6 +323,29 @@ database dumps, Docker volumes, unknown large files</code></pre>
           <div class="skill-card strong">
             <h3>What it refuses</h3>
             <p>No deletion. No broad cleanup commands. No pretending databases, Photos libraries, Mail stores, or unknown large files are harmless.</p>
+          </div>
+        </div>
+        <div class="prompt-grid" aria-label="Prompt examples for using the Ratatoskr analysis skill">
+          <div class="prompt-card">
+            <h3>Codex</h3>
+            <pre><code>Use skills/ratatoskr-report-analysis/SKILL.md.
+Analyze ratatoskr-report.json.
+I need 17 GB.
+Give me the shortest safe cleanup plan.</code></pre>
+          </div>
+          <div class="prompt-card">
+            <h3>Claude</h3>
+            <pre><code>Read skills/ratatoskr-report-analysis/SKILL.md,
+then inspect ratatoskr-report.json.
+Rank safe, cautious, and do-not-touch paths.
+Do not suggest deletion commands yet.</code></pre>
+          </div>
+          <div class="prompt-card">
+            <h3>Gemini</h3>
+            <pre><code>Load the Ratatoskr report-analysis skill.
+Use it to review this JSON report.
+Return cleanup targets, risks, report issues,
+and the next manual review step.</code></pre>
           </div>
         </div>
       </section>
@@ -275,6 +383,10 @@ database dumps, Docker volumes, unknown large files</code></pre>
           <article class="doc-card">
             <h3>Scanner QA</h3>
             <p>Use the skill to spot noisy rules, bad size accounting, duplicate paths, and report gaps that should become implementation work.</p>
+          </article>
+          <article class="doc-card">
+            <h3>AI handoff</h3>
+            <p>Give the report to an agent and get a cleanup plan that preserves the warnings, not a cheerful demolition order.</p>
           </article>
         </div>
       </section>
@@ -331,10 +443,10 @@ database dumps, Docker volumes, unknown large files</code></pre>
 
     <footer class="site-footer section-shell">
       <div>
+        <p>Free, open-source disk cleaning for developer machines. AI-assisted, user-triggered, and allergic to mystery deletion.</p>
         <p>I found the rot. Here is why I think it is rot. Here is what I refuse to touch. You decide when I bite.</p>
-        <p>Built with Go, because it is go time for those disk suckers.</p>
       </div>
-      <a href="https://github.com/odinns/ratatoskr">GitHub</a>
+      <a href="https://github.com/odinns/ratatoskr" target="_blank" rel="noopener noreferrer">GitHub</a>
     </footer>
 
     <script src="assets/site.js"></script>

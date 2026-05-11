@@ -27,7 +27,15 @@
       <section class="research-section">
         <div class="comparison-wrap">
           <table class="comparison-table">
-            <caption>Legend: green check means the feature is available free. Red X means the feature is paid. Empty means not supported or not clearly advertised. Grey slash means Ratatoskr should not do it.</caption>
+            <colgroup>
+              <col class="tool-col">
+              <col class="model-col">
+              <col span="2" class="small-feature-col">
+              <col class="medium-feature-col">
+              <col span="4" class="small-feature-col">
+              <col span="2" class="medium-feature-col">
+              <col class="notes-col">
+            </colgroup>
             <thead>
               <tr>
                 <th>Tool</th>
@@ -46,7 +54,7 @@
             </thead>
             <tbody>
               <tr class="own-row">
-                <th>Ratatoskr</th>
+                <th><a href="../" target="_blank">Ratatoskr</a></th>
                 <td>Free</td>
                 <td class="free">✓</td>
                 <td class="wont">⊘</td>
@@ -60,77 +68,7 @@
                 <td>Local CLI for developer/project waste. Read-only scan first, explicit rules, risk labels, JSON reports, skill handoff. Cleaning is intentionally not first.</td>
               </tr>
               <tr>
-                <th>CleanMyMac</th>
-                <td>Paid after trial</td>
-                <td></td>
-                <td class="paid">✕</td>
-                <td class="paid">✕</td>
-                <td class="paid">✕</td>
-                <td class="paid">✕</td>
-                <td class="paid">✕</td>
-                <td></td>
-                <td></td>
-                <td class="paid">✕</td>
-                <td>Broad Mac cleaner. Free mode scans, but cleanup is locked unless the trial or paid plan starts.</td>
-              </tr>
-              <tr>
-                <th>CCleaner</th>
-                <td>Freemium / paid Pro</td>
-                <td></td>
-                <td></td>
-                <td class="free">✓</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td class="free">✓</td>
-                <td>Basic cleaning appears free; Pro pushes driver/software updating and background automation.</td>
-              </tr>
-              <tr>
-                <th>DaisyDisk</th>
-                <td>Paid one-time</td>
-                <td></td>
-                <td class="paid">✕</td>
-                <td></td>
-                <td class="paid">✕</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td class="paid">✕</td>
-                <td>Excellent visual scanner. Explicitly manual: no automated cleaning.</td>
-              </tr>
-              <tr>
-                <th>Avast Cleanup Premium</th>
-                <td>Paid subscription</td>
-                <td></td>
-                <td></td>
-                <td class="paid">✕</td>
-                <td></td>
-                <td class="paid">✕</td>
-                <td class="paid">✕</td>
-                <td></td>
-                <td></td>
-                <td class="paid">✕</td>
-                <td>Broad consumer cleanup: junk, browser cleaning, duplicates, similar/bad photos.</td>
-              </tr>
-              <tr>
-                <th>Sweepo</th>
-                <td>Free</td>
-                <td></td>
-                <td></td>
-                <td class="free">✓</td>
-                <td class="free">✓</td>
-                <td class="free">✓</td>
-                <td class="free">✓</td>
-                <td></td>
-                <td></td>
-                <td class="free">✓</td>
-                <td>Free Mac cleaner, no hidden fees claimed. Moves files to Trash first. Not open source from what I saw.</td>
-              </tr>
-              <tr>
-                <th>BleachBit</th>
+                <th><a href="https://www.bleachbit.org/" target="_blank" rel="noopener noreferrer">BleachBit</a></th>
                 <td>Free</td>
                 <td class="free">✓</td>
                 <td></td>
@@ -144,7 +82,7 @@
                 <td>Free/open source, scriptable, preview/delete model, privacy features, custom CleanerML rules. Windows/Linux.</td>
               </tr>
               <tr>
-                <th>Czkawka</th>
+                <th><a href="https://github.com/qarmin/czkawka" target="_blank" rel="noopener noreferrer">Czkawka</a></th>
                 <td>Free</td>
                 <td class="free">✓</td>
                 <td></td>
@@ -155,9 +93,170 @@
                 <td class="free">✓</td>
                 <td class="free">✓</td>
                 <td class="free">✓</td>
-                <td>Free/open source cross-platform duplicate/similar/broken/temp-file scanner. CLI can export results.</td>
+                <td>Free/open source cross-platform duplicate/similar/broken/temp-file scanner. CLI can export results. Treat GitHub as the official source; lookalike domains are SEO fog.</td>
+              </tr>
+              <tr>
+                <th><a href="https://grandperspectiv.sourceforge.net/" target="_blank" rel="noopener noreferrer">GrandPerspective</a></th>
+                <td>Free</td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td></td>
+                <td class="free">✓</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>Open source Mac disk map. Good for spotting huge files and directories, not for rule-backed cleanup.</td>
+              </tr>
+              <tr>
+                <th><a href="https://bysiber.github.io/cleardisk/" target="_blank" rel="noopener noreferrer">ClearDisk</a></th>
+                <td>Free</td>
+                <td class="free">✓</td>
+                <td></td>
+                <td class="free">✓</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>Free/open source macOS developer cache cleaner. This is the closest product-shape threat: Xcode, node_modules, Docker, Homebrew, language caches.</td>
+              </tr>
+              <tr>
+                <th><a href="https://sweepo.net/" target="_blank" rel="noopener noreferrer">Sweepo</a></th>
+                <td>Free</td>
+                <td></td>
+                <td></td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td class="free">✓</td>
+                <td></td>
+                <td></td>
+                <td class="free">✓</td>
+                <td>Free Mac cleaner, no hidden fees claimed. Moves files to Trash first. Use sweepo.net; sweepo.com is parked for sale.</td>
+              </tr>
+              <tr>
+                <th><a href="https://www.omnigroup.com/more" target="_blank" rel="noopener noreferrer">OmniDiskSweeper</a></th>
+                <td>Free</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="free">✓</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="free">✓</td>
+                <td>Free Mac disk inspector from The Omni Group. Sorts files largest to smallest and lets the user trash or open them. Boring in the good way.</td>
+              </tr>
+              <tr>
+                <th><a href="https://www.ccleaner.com/ccleaner-mac" target="_blank" rel="noopener noreferrer">CCleaner</a></th>
+                <td>Freemium / paid Pro</td>
+                <td></td>
+                <td></td>
+                <td class="free">✓</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="free">✓</td>
+                <td>Free tier covers clutter, duplicates, app uninstalling, and startup items. Pro adds photo analysis, browser automation, and automatic Trash emptying.</td>
+              </tr>
+              <tr>
+                <th><a href="https://nektony.com/" target="_blank" rel="noopener noreferrer">Nektony MacCleaner Pro</a></th>
+                <td>Paid</td>
+                <td></td>
+                <td class="paid">$</td>
+                <td class="paid">$</td>
+                <td class="paid">$</td>
+                <td class="paid">$</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>Commercial Mac utility bundle: cleaner, app uninstaller, duplicate finder, and disk space analyzer. Broad suite, not developer-specific.</td>
+              </tr>
+              <tr>
+                <th><a href="https://daisydiskapp.com/" target="_blank" rel="noopener noreferrer">DaisyDisk</a></th>
+                <td>Paid one-time</td>
+                <td></td>
+                <td class="paid">$</td>
+                <td></td>
+                <td class="paid">$</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="paid">$</td>
+                <td>Excellent visual scanner. Explicitly manual: no automated cleaning.</td>
+              </tr>
+              <tr>
+                <th><a href="https://macpaw.com/cleanmymac" target="_blank" rel="noopener noreferrer">CleanMyMac</a></th>
+                <td>Paid after trial</td>
+                <td></td>
+                <td class="paid">$</td>
+                <td class="paid">$</td>
+                <td class="paid">$</td>
+                <td class="paid">$</td>
+                <td class="paid">$</td>
+                <td></td>
+                <td></td>
+                <td class="paid">$</td>
+                <td>Broad Mac cleaner. Free mode scans, but cleanup is locked unless the trial or paid plan starts.</td>
+              </tr>
+              <tr>
+                <th><a href="https://www.avg.com/avg-tuneup-for-mac" target="_blank" rel="noopener noreferrer">AVG TuneUp</a></th>
+                <td>Paid subscription</td>
+                <td></td>
+                <td></td>
+                <td class="paid">$</td>
+                <td></td>
+                <td class="paid">$</td>
+                <td class="paid">$</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>Commercial tune-up suite. Official page claims junk cleanup, duplicate files, and poor-quality/similar photo cleanup for Mac.</td>
+              </tr>
+              <tr>
+                <th><a href="https://us.norton.com/products/norton-utilities-ultimate" target="_blank" rel="noopener noreferrer">Norton Utilities Ultimate</a></th>
+                <td>Paid subscription</td>
+                <td></td>
+                <td></td>
+                <td class="paid">$</td>
+                <td></td>
+                <td></td>
+                <td class="paid">$</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>Broad subscription bundle. Utilities Ultimate is Windows-only on the official page, so this is not a real Mac competitor.</td>
+              </tr>
+              <tr>
+                <th><a href="https://www.avast.com/cleanup-mac" target="_blank" rel="noopener noreferrer">Avast Cleanup Premium</a></th>
+                <td>Paid subscription</td>
+                <td></td>
+                <td></td>
+                <td class="paid">$</td>
+                <td></td>
+                <td class="paid">$</td>
+                <td class="paid">$</td>
+                <td></td>
+                <td></td>
+                <td class="paid">$</td>
+                <td>Broad consumer cleanup: junk, browser cleaning, duplicates, similar/bad photos.</td>
               </tr>
             </tbody>
+            <caption>
+              <span class="legend-label">Legend</span>
+              <span class="legend-item free">✓ Free</span>
+              <span class="legend-item paid">$ Paid</span>
+              <span class="legend-item wont">⊘ Deliberately out</span>
+              <span class="legend-item unknown">Empty: unsupported or unclear</span>
+            </caption>
           </table>
         </div>
       </section>
@@ -194,6 +293,67 @@
           <article class="doc-card">
             <h3>Target mode</h3>
             <p>“I need 17 GB.” Rank safe and cautious candidates until the target is met. Better than a giant list.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="research-section">
+        <div class="section-intro">
+          <h2>Landing page lessons.</h2>
+          <p>The useful lesson is not feature count. It is how each tool earns trust, explains deletion, or quietly reveals what Ratatoskr should refuse to become.</p>
+        </div>
+        <div class="docs-grid">
+          <article class="doc-card">
+            <h3>BleachBit</h3>
+            <p>Preview is the product. Keep saying that every file is shown before deletion, and make custom rules inspectable instead of magical.</p>
+          </article>
+          <article class="doc-card">
+            <h3>Czkawka</h3>
+            <p>Core-library plus CLI is smart. Ratatoskr should keep scan logic separate from presentation so reports, skills, and future commands share the same judgment.</p>
+          </article>
+          <article class="doc-card">
+            <h3>GrandPerspective</h3>
+            <p>Filters, saved scans, and export matter. Ratatoskr does not need a treemap, but it does need repeatable reports users can compare after cleanup.</p>
+          </article>
+          <article class="doc-card">
+            <h3>ClearDisk</h3>
+            <p>The strongest direct signal: developer cache catalog, project artifact scanning, risk levels, cache descriptions, and trash-first cleanup. Skip the menu-bar monitor.</p>
+          </article>
+          <article class="doc-card">
+            <h3>Sweepo</h3>
+            <p>Simple two-step framing works: scan, review, clean. Downloads auto-organization is useful for consumers, but it is outside Ratatoskr's safety model.</p>
+          </article>
+          <article class="doc-card">
+            <h3>OmniDiskSweeper</h3>
+            <p>Largest-first browsing is still valuable. Ratatoskr should rank candidates by reclaimable size and make "open/reveal this path" easy in text output.</p>
+          </article>
+          <article class="doc-card">
+            <h3>CCleaner</h3>
+            <p>Quick Scan is a good name for guided defaults. Automatic browser cleanup, photo analysis, and startup management are not Ratatoskr's lane.</p>
+          </article>
+          <article class="doc-card">
+            <h3>Nektony</h3>
+            <p>Separate utilities make the scope understandable: cleaner, uninstaller, duplicate finder, disk analyzer. Ratatoskr should stay one sharp tool, not a suite.</p>
+          </article>
+          <article class="doc-card">
+            <h3>DaisyDisk</h3>
+            <p>Best critique of cleaners: caches come back. Ratatoskr should distinguish durable wins from temporary cache relief in reports.</p>
+          </article>
+          <article class="doc-card">
+            <h3>CleanMyMac</h3>
+            <p>Trust badges and big numbers sell confidence, but the feature soup gets blurry. Ratatoskr's advantage is narrower scope and stronger explanations.</p>
+          </article>
+          <article class="doc-card">
+            <h3>AVG TuneUp</h3>
+            <p>Automatic cleanup is a strong promise and a weak safety model. Ratatoskr should make automation explicit, reversible, and boringly limited.</p>
+          </article>
+          <article class="doc-card">
+            <h3>Norton</h3>
+            <p>The landing page buries Utilities Ultimate inside bundle noise, and the utility is Windows-only there. Clarity beats brand weight.</p>
+          </article>
+          <article class="doc-card">
+            <h3>Avast Cleanup</h3>
+            <p>Photo cleanup dominates the pitch: duplicates, similar photos, bad photos. Ratatoskr should name this as a non-goal instead of drifting into personal-file judgment.</p>
           </article>
         </div>
       </section>

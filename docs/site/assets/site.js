@@ -1,6 +1,7 @@
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const revealItems = document.querySelectorAll('[data-reveal]');
+const root = document.documentElement;
 
 if (!prefersReducedMotion.matches) {
   const observer = new IntersectionObserver(
@@ -62,4 +63,44 @@ if (scanLog && !prefersReducedMotion.matches) {
   };
 
   typeNext();
+}
+
+if (!prefersReducedMotion.matches) {
+  const heroStage = document.querySelector('.hero-stage');
+  let pendingFrame = 0;
+
+  const setMotionVars = (clientX, clientY) => {
+    if (pendingFrame) {
+      window.cancelAnimationFrame(pendingFrame);
+    }
+
+    pendingFrame = window.requestAnimationFrame(() => {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const offsetX = (clientX - centerX) / centerX;
+      const offsetY = (clientY - centerY) / centerY;
+
+      root.style.setProperty('--cursor-x', `${Math.round(offsetX * 18)}px`);
+      root.style.setProperty('--cursor-y', `${Math.round(offsetY * 14)}px`);
+
+      if (heroStage) {
+        heroStage.style.setProperty('--hero-x', (offsetX * 8).toFixed(2));
+        heroStage.style.setProperty('--hero-y', (offsetY * 6).toFixed(2));
+      }
+    });
+  };
+
+  window.addEventListener('pointermove', (event) => {
+    setMotionVars(event.clientX, event.clientY);
+  }, { passive: true });
+
+  window.addEventListener('pointerleave', () => {
+    root.style.removeProperty('--cursor-x');
+    root.style.removeProperty('--cursor-y');
+
+    if (heroStage) {
+      heroStage.style.removeProperty('--hero-x');
+      heroStage.style.removeProperty('--hero-y');
+    }
+  });
 }
