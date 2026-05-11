@@ -25,7 +25,7 @@
         <span>Ratatoskr</span>
       </a>
       <nav class="site-nav" aria-label="Main navigation">
-        <a class="nav-link" href="#position">Position</a>
+        <a class="nav-link" href="#position">Belief</a>
         <a class="nav-link" href="#rescue">17 GB</a>
         <a class="nav-link" href="#problem">Problem</a>
         <a class="nav-link" href="#why">Why</a>
@@ -41,8 +41,8 @@
       <section class="hero section-shell" data-reveal>
         <div class="hero-copy">
           <p class="kicker">Free. Open source. Built for developers.</p>
-          <h1>Developers disk cleaner. No bullshit.</h1>
-          <p class="lede">Ratatoskr finds generated waste, explains the risk, and prunes only when told. Evidence first. Deletion never by surprise.</p>
+          <h1>Disk cleaners should have to prove it.</h1>
+          <p class="lede">Ratatoskr finds generated waste, explains the risk, and refuses to delete by vibes. Large is not trash. Old is not safe. Unknown stays report-only.</p>
           <div class="hero-actions">
             <a class="button button-primary" href="#commands">Install</a>
             <a class="button button-secondary" href="#risk">Read the safety model</a>
@@ -118,10 +118,36 @@
 
       <section class="section-shell position-section" id="position" data-reveal>
         <div class="section-intro">
-          <p class="kicker">Position</p>
-          <h2>Not a magic delete button. A local disk auditor with judgment.</h2>
-          <p>Ratatoskr is built for developer machines: project folders, framework caches, build output, dependency trees, local AI models, and the awkward junk normal cleaners do not understand.</p>
-          <p>The CLI scans your disk and produces hard evidence. The AI skill reads the report, ranks what is worth touching, and calls out what can hurt. It does not delete. It does not guess.</p>
+          <p class="kicker">The belief</p>
+          <h2>A cleaner that cannot explain itself should not be allowed near your disk.</h2>
+          <p>Ratatoskr exists because developer machines are full of rebuildable junk sitting next to real data. Project folders, framework caches, dependency trees, local models, Docker state, databases, and old mistakes can look similar from far enough away.</p>
+          <p>The CLI scans and produces hard evidence. The included <span class="skill-name">SKILL.md</span> helps an AI agent rank the report without turning “large” into “delete”.</p>
+        </div>
+        <div class="belief-grid">
+          <article>
+            <h3>Large is not trash.</h3>
+            <p>A dataset, database dump, or Photos library can be huge and absolutely not cleanup fodder.</p>
+          </article>
+          <article>
+            <h3>Old is not safe.</h3>
+            <p>Age is context. It never upgrades a path from suspicious to cleanable.</p>
+          </article>
+          <article>
+            <h3>Cache is not a permission slip.</h3>
+            <p>Safe means a narrow rule knows the owner, consequence, exclusions, and rebuild cost.</p>
+          </article>
+          <article>
+            <h3>Unknown is report-only.</h3>
+            <p>If Ratatoskr cannot explain the path, it points at it and keeps its teeth to itself.</p>
+          </article>
+          <article>
+            <h3>AI advises. You decide.</h3>
+            <p>The skill reads local reports and preserves doubt. It does not delete. It does not guess.</p>
+          </article>
+          <article>
+            <h3>Rules beat vibes.</h3>
+            <p>The useful output is path, size, risk, rule, reason, and consequence. Anything less is theatre.</p>
+          </article>
         </div>
         <div class="position-grid">
           <article>
@@ -187,7 +213,7 @@ database dumps, Docker volumes, unknown large files</code></pre>
         <div class="section-intro">
           <p class="kicker">The problem</p>
           <h2>Most disk cleaners are too eager.</h2>
-          <p>They treat “large” as “trash”. They treat “old” as “safe”. They turn your home folder into a casino.</p>
+          <p>They treat “large” as “trash”. They treat “old” as “safe”. They ask for trust before showing proof.</p>
           <p>Ratatoskr only trusts narrow rules, known generated files, and explicit user intent.</p>
         </div>
         <div class="scene-card rot-card">
@@ -300,7 +326,7 @@ database dumps, Docker volumes, unknown large files</code></pre>
       <section class="section-shell skill-section" id="skill" data-reveal>
         <div class="section-intro">
           <p class="kicker">Included agent skill</p>
-          <h2>Ratatoskr ships with a <span class="skill-name">SKILL.md</span> your AI agent can use.</h2>
+          <h2>AI is useful here only if it preserves doubt.</h2>
           <p><code class="skill-path">skills/ratatoskr-report-analysis/SKILL.md</code> is a portable instruction file for Codex, Claude, Gemini, or any agent that can read local project instructions. The CLI scans. The skill reads the JSON report, ranks cleanup targets, and keeps deletion behind you.</p>
         </div>
         <div class="skill-layout">
@@ -352,10 +378,10 @@ and the next manual review step.</code></pre>
 
       <section class="section-shell myth-section" data-reveal>
         <div class="section-intro">
-          <p class="kicker">Myth without cosplay</p>
-          <h2>The filesystem is Yggdrasil. Fine. Now check the path again.</h2>
-          <p>Ratatoskr runs from roots to branches, reporting what gnaws at the disk. Then it waits.</p>
-          <p>No heroic cleanup ritual. No one-click bonfire. No horned helmet nonsense. Just careful pruning.</p>
+          <p class="kicker">Myth, lightly applied</p>
+          <h2>Ratatoskr follows the branches. The rules decide what counts as rot.</h2>
+          <p>The name brings the mythology. The product stays practical: resolve the path, explain the risk, skip what looks wrong.</p>
+          <p>It is a disk cleaner with a leash, not a cleanup ritual.</p>
         </div>
         <div class="prune-scene">
           <img src="assets/images/safe-prune.png" alt="Ratatoskr carefully clips one safe twig while leaving the rest of the filesystem tree untouched." width="1024" height="1024" loading="lazy">

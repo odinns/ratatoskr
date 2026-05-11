@@ -709,14 +709,29 @@ section[id] {
   gap: 1rem;
 }
 
+.belief-grid,
 .position-grid {
   display: grid;
   margin-top: 2rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
+.belief-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.belief-grid article {
+  background:
+    radial-gradient(circle at 94% 18%, rgba(226, 74, 42, 0.1), transparent 10rem),
+    rgba(31, 23, 18, 0.68);
+}
+
+.position-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .rescue-steps article,
+.belief-grid article,
 .position-grid article,
 .skill-card,
 .doc-card,
@@ -729,6 +744,7 @@ section[id] {
 }
 
 .rescue-steps article:hover,
+.belief-grid article:hover,
 .position-grid article:hover,
 .skill-card:hover,
 .doc-card:hover,
@@ -753,6 +769,7 @@ section[id] {
 }
 
 .rescue-steps p,
+.belief-grid p,
 .position-grid p,
 .skill-card p,
 .doc-card p,
@@ -1324,6 +1341,7 @@ section[id] {
   .command-grid,
   .reference-grid,
   .rescue-steps,
+  .belief-grid,
   .position-grid,
   .decision-flow,
   .skill-layout,
