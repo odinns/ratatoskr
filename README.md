@@ -26,6 +26,12 @@ Unknown stays report-only. That is the point.
 
 ## Install
 
+With Homebrew:
+
+```sh
+brew install odinns/tap/ratatoskr
+```
+
 With Go:
 
 ```sh
