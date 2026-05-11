@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/odinn/ratatoskr/internal/ratatoskr"
@@ -103,7 +105,10 @@ func newRulesCommand(out io.Writer) *cobra.Command {
 				fmt.Fprintf(out, "  exclusions: %s\n", strings.Join(rule.Exclusions, ", "))
 				fmt.Fprintf(out, "  reason: %s\n", rule.Reason)
 				fmt.Fprintf(out, "  consequence: %s\n", rule.Consequence)
-				fmt.Fprintf(out, "  cleanable by default: %t\n\n", rule.CleanableByDefault)
+				fmt.Fprintf(out, "  cleanable by default: %t\n", rule.CleanableByDefault)
+				fmt.Fprintf(out, "  rebuild cost: %s\n", rule.RebuildCost)
+				fmt.Fprintf(out, "  reclaim durability: %s\n", rule.ReclaimDurability)
+				fmt.Fprintf(out, "  preferred cleanup: %s\n\n", rule.PreferredCleanup)
 			}
 			return nil
 		},
@@ -114,6 +119,9 @@ func newRulesCommand(out io.Writer) *cobra.Command {
 func newSummaryCommand(out io.Writer) *cobra.Command {
 	var file string
 	var limit int
+	var targetBytes int64
+	var target string
+	var format string
 	cmd := &cobra.Command{
 		Use:   "summary",
 		Short: "Summarize an existing scan report.",
@@ -131,12 +139,24 @@ func newSummaryCommand(out io.Writer) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			writeSummary(out, summary, limit)
-			return nil
+			if target != "" {
+				parsed, err := parseTargetSize(target)
+				if err != nil {
+					return err
+				}
+				targetBytes = parsed
+			}
+			if targetBytes < 0 {
+				return fmt.Errorf("--target-bytes must be greater than zero")
+			}
+			return writeSummary(out, summary, limit, targetBytes, format)
 		},
 	}
 	cmd.Flags().StringVar(&file, "file", "", "scan report JSON file")
 	cmd.Flags().IntVar(&limit, "limit", 20, "number of candidates per section")
+	cmd.Flags().StringVar(&target, "target", "", "read-only target-space projection, like 500MB, 1.5GB, or 2GiB")
+	cmd.Flags().Int64Var(&targetBytes, "target-bytes", 0, "read-only target-space projection in bytes")
+	cmd.Flags().StringVar(&format, "format", "text", "output format: text or json")
 	return cmd
 }
 
@@ -189,21 +209,54 @@ func writeTextScan(out io.Writer, result ratatoskr.ScanResult) {
 	}
 }
 
-func writeSummary(out io.Writer, summary ratatoskr.Summary, limit int) {
+func writeSummary(out io.Writer, summary ratatoskr.Summary, limit int, targetBytes int64, format string) error {
+	switch format {
+	case "json":
+		return writeSummaryJSON(out, summary, targetBytes)
+	case "text", "":
+		writeTextSummary(out, summary, limit, targetBytes)
+		return nil
+	default:
+		return fmt.Errorf("unsupported format %q", format)
+	}
+}
+
+func writeTextSummary(out io.Writer, summary ratatoskr.Summary, limit int, targetBytes int64) {
 	result := summary.Result
 	fmt.Fprintln(out, "Ratatoskr scan summary")
 	fmt.Fprintf(out, "Candidates: %d\n", result.Totals.CandidateCount)
 	fmt.Fprintf(out, "Total: %s\n", humanBytes(result.Totals.TotalBytes))
-	fmt.Fprintf(out, "Safe: %s\n", humanBytes(result.Totals.SafeBytes))
-	fmt.Fprintf(out, "Cautious: %s\n", humanBytes(result.Totals.CautiousBytes))
-	fmt.Fprintf(out, "Dangerous: %s\n", humanBytes(result.Totals.DangerousBytes))
+	fmt.Fprintf(out, "Safe generated waste: %s\n", humanBytes(result.Totals.SafeBytes))
+	fmt.Fprintf(out, "Cautious rebuildable waste: %s\n", humanBytes(totalSize(summary.CautiousRebuildableCandidates(0))))
+	fmt.Fprintf(out, "Manual review: %s\n", humanBytes(totalSize(summary.ManualReviewCandidates(0))))
+	fmt.Fprintf(out, "Report-only / do-not-touch: %s\n", humanBytes(result.Totals.DangerousBytes))
 	fmt.Fprintf(out, "Skipped: %d\n", len(result.Skipped))
 	fmt.Fprintf(out, "Errors: %d\n\n", len(result.Errors))
 	fmt.Fprintln(out, "Reports contain local file paths. Treat them as private.")
 
-	writeCandidateSection(out, "Top candidates", summary.TopCandidates(limit))
-	writeCandidateSection(out, "Top cautious", summary.TopCandidatesByRisk(ratatoskr.RiskCautious, limit))
-	writeCandidateSection(out, "Top safe", summary.TopCandidatesByRisk(ratatoskr.RiskSafe, limit))
+	writeCandidateSection(out, "Safe generated waste", summary.TopCandidatesByRisk(ratatoskr.RiskSafe, limit))
+	writeCandidateSection(out, "Cautious rebuildable waste", summary.CautiousRebuildableCandidates(limit))
+	writeCandidateSection(out, "Manual review", summary.ManualReviewCandidates(limit))
+	writeCandidateSection(out, "Report-only / do-not-touch", summary.TopCandidatesByRisk(ratatoskr.RiskDangerous, limit))
+	if targetBytes > 0 {
+		writeTargetProjection(out, summary, targetBytes)
+	}
+}
+
+func writeSummaryJSON(out io.Writer, summary ratatoskr.Summary, targetBytes int64) error {
+	payload := struct {
+		ratatoskr.ScanResult
+		TargetProjection *ratatoskr.TargetProjection `json:"target_projection,omitempty"`
+	}{
+		ScanResult: summary.Result,
+	}
+	if targetBytes > 0 {
+		projection := summary.TargetProjection(targetBytes)
+		payload.TargetProjection = &projection
+	}
+	encoder := json.NewEncoder(out)
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(payload)
 }
 
 func writeCandidateSection(out io.Writer, title string, candidates []ratatoskr.Candidate) {
@@ -215,6 +268,47 @@ func writeCandidateSection(out io.Writer, title string, candidates []ratatoskr.C
 	for _, candidate := range candidates {
 		fmt.Fprintf(out, "  %8s  %-9s  %-28s  %s\n", humanBytes(candidate.SizeBytes), candidate.Risk, candidate.Rule, candidate.Path)
 	}
+}
+
+func writeTargetProjection(out io.Writer, summary ratatoskr.Summary, targetBytes int64) {
+	projection := summary.TargetProjection(targetBytes)
+	fmt.Fprintf(out, "\nTarget-space projection: %s\n", humanBytes(targetBytes))
+	fmt.Fprintf(out, "Safe available: %s\n", humanBytes(projection.SafeAvailableBytes))
+	if len(projection.RecommendedCandidates) == 0 {
+		fmt.Fprintln(out, "  No safe or cautious candidates are available for this projection.")
+		return
+	}
+	for _, candidate := range projection.RecommendedCandidates {
+		fmt.Fprintf(out, "  %8s  %-9s  %-28s  rebuild: %-12s  durability: %-12s  %s\n", humanBytes(candidate.SizeBytes), candidate.Risk, candidate.Rule, displayValue(candidate.RebuildCost), displayValue(candidate.ReclaimDurability), candidate.Path)
+		if candidate.Consequence != "" {
+			fmt.Fprintf(out, "    consequence: %s\n", candidate.Consequence)
+		}
+		if candidate.PreferredCleanup != "" {
+			fmt.Fprintf(out, "    inspect: %s\n", candidate.PreferredCleanup)
+		}
+	}
+	fmt.Fprintf(out, "Safe selected: %s\n", humanBytes(projection.SafeSelectedBytes))
+	fmt.Fprintf(out, "Cautious selected: %s\n", humanBytes(projection.CautiousSelectedBytes))
+	fmt.Fprintf(out, "Projected bytes: %s\n", humanBytes(projection.ProjectedBytes))
+	fmt.Fprintf(out, "Remaining bytes: %s\n", humanBytes(projection.RemainingBytes))
+	fmt.Fprintf(out, "Target met: %t\n", projection.TargetMet)
+	fmt.Fprintf(out, "Excluded report-only: %s across %d candidates\n", humanBytes(projection.ExcludedReportOnlyBytes), projection.ExcludedReportOnlyCount)
+	fmt.Fprintf(out, "%s\n", projection.Note)
+}
+
+func displayValue(value string) string {
+	if value == "" {
+		return "-"
+	}
+	return value
+}
+
+func totalSize(candidates []ratatoskr.Candidate) int64 {
+	var total int64
+	for _, candidate := range candidates {
+		total += candidate.SizeBytes
+	}
+	return total
 }
 
 func humanBytes(bytes int64) string {
@@ -230,4 +324,46 @@ func humanBytes(bytes int64) string {
 		}
 	}
 	return fmt.Sprintf("%.1f PiB", value/unit)
+}
+
+var targetSizePattern = regexp.MustCompile(`(?i)^\s*([+-]?(?:\d+(?:\.\d*)?|\.\d+))\s*([kmgt]?i?b|b)?\s*$`)
+
+func parseTargetSize(input string) (int64, error) {
+	matches := targetSizePattern.FindStringSubmatch(input)
+	if matches == nil {
+		return 0, fmt.Errorf("invalid --target %q; use a size like 500MB, 1.5GB, or 2GiB", input)
+	}
+	value, err := strconv.ParseFloat(matches[1], 64)
+	if err != nil || value <= 0 {
+		return 0, fmt.Errorf("invalid --target %q; target must be greater than zero", input)
+	}
+	unit := strings.ToLower(matches[2])
+	multiplier := float64(1)
+	switch unit {
+	case "", "b":
+		multiplier = 1
+	case "kb":
+		multiplier = 1000
+	case "mb":
+		multiplier = 1000 * 1000
+	case "gb":
+		multiplier = 1000 * 1000 * 1000
+	case "tb":
+		multiplier = 1000 * 1000 * 1000 * 1000
+	case "kib":
+		multiplier = 1024
+	case "mib":
+		multiplier = 1024 * 1024
+	case "gib":
+		multiplier = 1024 * 1024 * 1024
+	case "tib":
+		multiplier = 1024 * 1024 * 1024 * 1024
+	default:
+		return 0, fmt.Errorf("invalid --target %q; use a size like 500MB, 1.5GB, or 2GiB", input)
+	}
+	bytes := int64(value * multiplier)
+	if bytes <= 0 {
+		return 0, fmt.Errorf("invalid --target %q; target must be greater than zero", input)
+	}
+	return bytes, nil
 }

@@ -89,3 +89,17 @@ type ScanResult struct {
 	Errors        []ScanError   `json:"errors"`
 	ActiveRules   []Rule        `json:"active_rules"`
 }
+
+type TargetProjection struct {
+	TargetBytes             int64       `json:"target_bytes"`
+	SafeAvailableBytes      int64       `json:"safe_available_bytes"`
+	SafeSelectedBytes       int64       `json:"safe_selected_bytes"`
+	CautiousSelectedBytes   int64       `json:"cautious_selected_bytes"`
+	ProjectedBytes          int64       `json:"projected_bytes"`
+	RemainingBytes          int64       `json:"remaining_bytes"`
+	TargetMet               bool        `json:"target_met"`
+	RecommendedCandidates   []Candidate `json:"recommended_candidates"`
+	ExcludedReportOnlyBytes int64       `json:"excluded_report_only_bytes"`
+	ExcludedReportOnlyCount int         `json:"excluded_report_only_count"`
+	Note                    string      `json:"note"`
+}
