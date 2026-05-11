@@ -85,6 +85,8 @@ Every candidate must show:
 - risk level
 - rule name
 - reason it is considered removable
+- expected consequence or rebuild cost
+- whether reclaimed space is temporary cache relief or durable removal
 - whether it can be cleaned by default
 
 No candidate should appear as magic.
@@ -686,19 +688,91 @@ Possible lockfiles:
 
 ## Package Managers
 
-Potential safe or cautious caches:
+Potential safe or cautious user caches:
 
 - npm cache
 - yarn cache
 - pnpm store
 - bun cache
 - Homebrew cache
+- pip cache
+- uv cache
+- Poetry cache
+- Composer cache
+- Go module cache
+- Cargo registry/git cache
+- Gradle cache
+- Maven repository
+- CocoaPods cache
+- Swift Package Manager cache
+- Playwright, Puppeteer, and browser test caches
+- Terraform/OpenTofu plugin cache
+- JetBrains and VS Code caches
 
 Rules must be versioned and individually disableable.
 
 Do not assume one path works for all versions.
 
 Prefer command-discovered cache paths later, but MVP can start with common paths as long as rules are explicit.
+
+Each developer cache rule needs:
+
+- owner tool
+- exact known paths
+- risk
+- reason
+- rebuild or re-download cost
+- exclusions
+- whether command-native cleanup is preferred
+
+Do not copy another cleaner's "safe" label blindly. ClearDisk is useful research because it names real developer cache families, but Ratatoskr's safety bar stays stricter: Docker data, local AI models, version-manager installs, Android emulators, Xcode archives, and anything that behaves like installed state are cautious or dangerous until a narrow rule proves otherwise.
+
+## Project Artifacts
+
+Project artifact scanning is Ratatoskr's real lane.
+
+Start with explicit scan roots such as `~/Code`, not the whole home directory.
+
+Detect project roots from marker files, then report generated artifacts inside those roots.
+
+Initial project markers:
+
+- Node: `package.json`, lockfiles
+- Rust: `Cargo.toml`
+- Go: `go.mod`
+- PHP: `composer.json`
+- Laravel: `artisan`
+- Ruby: `Gemfile`
+- Python: `pyproject.toml`, `requirements.txt`
+- Swift: `Package.swift`
+- Gradle: `build.gradle`, `build.gradle.kts`
+- Maven: `pom.xml`
+- Flutter/Dart: `pubspec.yaml`
+- Terraform/OpenTofu: `main.tf`, `*.tf`
+
+Initial artifact targets:
+
+- `node_modules`
+- `vendor`
+- `target`
+- `.build`
+- `build`
+- `dist`
+- `coverage`
+- `.next`
+- `.nuxt`
+- `.turbo`
+- `.vite`
+- `.terraform`
+- `.serverless`
+
+Project artifacts must show the project root, marker that proved the project type, artifact path, size, risk, rebuild cost, and reason.
+
+Never clean dependency folders by default. Report them clearly, rank them by size, and make the reinstall cost obvious.
+
+Age can be displayed as context. Age must not make a candidate cleanable by itself.
+
+Reports should make the DaisyDisk distinction explicit: cache relief is useful but often temporary; deleting old generated project artifacts is more durable, but can cost rebuild or reinstall time.
 
 ## Docker
 
@@ -1097,9 +1171,10 @@ Initial rule sets:
 - Laravel
 - Node
 - Composer
-- common package caches
+- common developer caches, explicitly enabled or explicitly scanned
 - known build folders
 - known logs
+- project artifacts with project-root proof
 - unknown large files as report-only
 
 Success criteria:
@@ -1109,6 +1184,7 @@ Success criteria:
 - finds obvious generated waste
 - does not flag personal documents as cleanable
 - explains every candidate
+- shows rebuild or re-download cost for dependency and cache candidates
 - output is readable enough to trust
 - no mutation occurs
 
@@ -1183,6 +1259,9 @@ Candidates:
 
 - `node_modules`
 - `vendor`
+- `target`
+- `.build`
+- `.terraform`
 - selected package stores
 - selected Docker images/build cache, if Docker support is ready
 
@@ -1191,6 +1270,67 @@ Success criteria:
 - user knows this may cost reinstall/rebuild time
 - no data-like artifacts included
 - no Docker volumes included
+
+## Milestone 5: Developer Cache Catalog
+
+Build later:
+
+- named developer cache catalog
+- command-discovered cache paths where reliable
+- grouped report sections by owner tool
+- per-cache rebuild or re-download guidance
+
+Good targets:
+
+- Xcode DerivedData, Products, DeviceSupport, Logs, Previews
+- Swift Package Manager and CocoaPods caches
+- npm, pnpm, Yarn, Bun, Deno
+- pip, uv, Poetry, pipenv, Conda
+- Go module cache
+- Cargo registry and git cache
+- Gradle, Maven, SBT/Ivy, Bazel
+- Homebrew cache
+- Playwright and Puppeteer browser caches
+- Terraform/OpenTofu plugin cache
+- VS Code and JetBrains caches
+
+Risk defaults:
+
+- safe: narrow generated caches that rebuild automatically or with one clear command
+- cautious: dependency stores, large re-downloads, version-manager installs, emulators, archives, and project artifacts
+- dangerous: Docker data, volumes, databases, local models, and anything that can contain user-created state
+
+Success criteria:
+
+- every catalog entry has an owner, path, risk, explanation, consequence, and cleanability
+- catalog entries can be disabled individually
+- report output stays useful without a GUI
+- no background monitor or automatic cleaning is added
+
+## Milestone 6: Project Artifact Ranking
+
+Build later:
+
+- artifact ranking by size inside explicit project roots
+- project type detection from marker files
+- stale context based on project root activity
+- target-space planning without deleting anything
+
+Must include:
+
+- project root path
+- marker file that identified the project
+- artifact path and size
+- last modified time as context
+- risk and rebuild cost
+- reason it is not default-cleanable
+
+Success criteria:
+
+- `~/Code` scan surfaces the biggest generated project artifacts first
+- old `node_modules`, `vendor`, `target`, `.build`, and `.terraform` folders are easy to inspect
+- age never upgrades cleanability
+- target planning remains a report, not a cleanup shortcut
 
 ## Non-Goals For Now
 
@@ -1201,8 +1341,14 @@ Do not build:
 - cloud sync
 - system optimizer
 - duplicate photo detection
+- similar-photo detection
+- bad-photo detection
 - AI cleanup
 - auto-clean background agent
+- browser history/password cleanup
+- startup item management
+- app uninstaller
+- Downloads auto-organization
 - aggressive home-folder cleanup
 - arbitrary Downloads cleanup
 - Docker volume deletion
