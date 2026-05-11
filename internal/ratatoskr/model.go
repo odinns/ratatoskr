@@ -35,6 +35,9 @@ type Rule struct {
 	Reason             string   `json:"reason"`
 	Consequence        string   `json:"consequence"`
 	CleanableByDefault bool     `json:"cleanable_by_default"`
+	RebuildCost        string   `json:"rebuild_cost"`
+	ReclaimDurability  string   `json:"reclaim_durability"`
+	PreferredCleanup   string   `json:"preferred_cleanup"`
 }
 
 type Candidate struct {
@@ -47,6 +50,13 @@ type Candidate struct {
 	Reason             string   `json:"reason"`
 	Consequence        string   `json:"consequence"`
 	CleanableByDefault bool     `json:"cleanable_by_default"`
+	RebuildCost        string   `json:"rebuild_cost"`
+	ReclaimDurability  string   `json:"reclaim_durability"`
+	PreferredCleanup   string   `json:"preferred_cleanup"`
+	ProjectRoot        string   `json:"project_root,omitempty"`
+	MarkerFile         string   `json:"marker_file,omitempty"`
+	ProjectType        string   `json:"project_type,omitempty"`
+	ArtifactPath       string   `json:"artifact_path,omitempty"`
 }
 
 type SkippedPath struct {

@@ -205,6 +205,9 @@ func (s Scanner) addProjectCandidates(project string, kind projectKind, explicit
 	if kind.composer {
 		addPathCandidate(filepath.Join(project, "vendor"), ruleByName(s.rules, "composer-vendor"), state)
 	}
+	if kind.rust {
+		addProjectPathCandidate(project, "target", "rust", "Cargo.toml", ruleByName(s.rules, "rust-target"), state)
+	}
 	if explicit {
 		rule := ruleByName(s.rules, "explicit-package-cache")
 		for _, rel := range []string{"npm-cache", "pnpm-store", "yarn-cache", "composer-cache"} {
@@ -258,6 +261,26 @@ func addChildrenCandidate(project, rel string, rule Rule, state *scanState) {
 }
 
 func addPathCandidate(path string, rule Rule, state *scanState) {
+	addCandidateWithProjectMetadata(path, rule, projectMetadata{}, state)
+}
+
+type projectMetadata struct {
+	root     string
+	marker   string
+	kind     string
+	artifact string
+}
+
+func addProjectPathCandidate(project string, rel string, projectType string, marker string, rule Rule, state *scanState) {
+	addCandidateWithProjectMetadata(filepath.Join(project, filepath.FromSlash(rel)), rule, projectMetadata{
+		root:     project,
+		marker:   marker,
+		kind:     projectType,
+		artifact: filepath.ToSlash(rel),
+	}, state)
+}
+
+func addCandidateWithProjectMetadata(path string, rule Rule, metadata projectMetadata, state *scanState) {
 	info, err := os.Lstat(path)
 	if err != nil {
 		return
@@ -275,7 +298,12 @@ func addPathCandidate(path string, rule Rule, state *scanState) {
 		}
 		return
 	}
-	state.addCandidate(candidateFromRule(path, size, rule), info)
+	candidate := candidateFromRule(path, size, rule)
+	candidate.ProjectRoot = metadata.root
+	candidate.MarkerFile = metadata.marker
+	candidate.ProjectType = metadata.kind
+	candidate.ArtifactPath = metadata.artifact
+	state.addCandidate(candidate, info)
 	if info.IsDir() {
 		state.candidateDirs = append(state.candidateDirs, path)
 	}
@@ -285,10 +313,11 @@ type projectKind struct {
 	laravel  bool
 	node     bool
 	composer bool
+	rust     bool
 }
 
 func (p projectKind) any() bool {
-	return p.laravel || p.node || p.composer
+	return p.laravel || p.node || p.composer || p.rust
 }
 
 func detectProject(dir string) projectKind {
@@ -298,6 +327,7 @@ func detectProject(dir string) projectKind {
 		laravel:  fileExists(filepath.Join(dir, "artisan")) && composerRequiresLaravel(composerPath),
 		node:     fileExists(filepath.Join(dir, "package.json")) || anyFileExists(dir, "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lockb"),
 		composer: composer,
+		rust:     fileExists(filepath.Join(dir, "Cargo.toml")),
 	}
 }
 
@@ -465,6 +495,9 @@ func candidateFromRule(path string, size pathSize, rule Rule) Candidate {
 		Reason:             rule.Reason,
 		Consequence:        rule.Consequence,
 		CleanableByDefault: rule.CleanableByDefault,
+		RebuildCost:        rule.RebuildCost,
+		ReclaimDurability:  rule.ReclaimDurability,
+		PreferredCleanup:   rule.PreferredCleanup,
 	}
 }
 

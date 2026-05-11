@@ -172,6 +172,9 @@ func (s Scanner) streamProjectCandidates(project string, kind projectKind, expli
 	if kind.composer {
 		streamPathCandidate(filepath.Join(project, "vendor"), ruleByName(s.rules, "composer-vendor"), report)
 	}
+	if kind.rust {
+		streamProjectPathCandidate(project, "target", "rust", "Cargo.toml", ruleByName(s.rules, "rust-target"), report)
+	}
 	if explicit {
 		rule := ruleByName(s.rules, "explicit-package-cache")
 		for _, rel := range []string{"npm-cache", "pnpm-store", "yarn-cache", "composer-cache"} {
@@ -202,6 +205,19 @@ func streamChildrenCandidate(project, rel string, rule Rule, report *streamRepor
 }
 
 func streamPathCandidate(path string, rule Rule, report *streamReport) {
+	streamCandidateWithProjectMetadata(path, rule, projectMetadata{}, report)
+}
+
+func streamProjectPathCandidate(project string, rel string, projectType string, marker string, rule Rule, report *streamReport) {
+	streamCandidateWithProjectMetadata(filepath.Join(project, filepath.FromSlash(rel)), rule, projectMetadata{
+		root:     project,
+		marker:   marker,
+		kind:     projectType,
+		artifact: filepath.ToSlash(rel),
+	}, report)
+}
+
+func streamCandidateWithProjectMetadata(path string, rule Rule, metadata projectMetadata, report *streamReport) {
 	info, err := os.Lstat(path)
 	if err != nil {
 		return
@@ -219,7 +235,12 @@ func streamPathCandidate(path string, rule Rule, report *streamReport) {
 		}
 		return
 	}
-	report.addCandidate(candidateFromRule(path, size, rule), info)
+	candidate := candidateFromRule(path, size, rule)
+	candidate.ProjectRoot = metadata.root
+	candidate.MarkerFile = metadata.marker
+	candidate.ProjectType = metadata.kind
+	candidate.ArtifactPath = metadata.artifact
+	report.addCandidate(candidate, info)
 	if info.IsDir() {
 		report.candidateRoots = append(report.candidateRoots, path)
 	}

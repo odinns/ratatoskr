@@ -182,6 +182,62 @@ func TestScanResultShapeAndReadOnly(t *testing.T) {
 	}
 }
 
+func TestGeneratedCandidatesIncludeDisplayOnlyMetadata(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "package.json"), "{}")
+	writeFile(t, filepath.Join(root, "dist", "app.js"), "dist")
+
+	result := scanForTest(t, root)
+	candidate := candidateByRule(result, "node-build-output")
+	if candidate.RebuildCost == "" || candidate.ReclaimDurability == "" || candidate.PreferredCleanup == "" {
+		t.Fatalf("candidate missing report metadata: %#v", candidate)
+	}
+	if strings.Contains(candidate.PreferredCleanup, "ratatoskr clean") || strings.Contains(candidate.PreferredCleanup, "rm ") {
+		t.Fatalf("preferred cleanup should not contain deletion commands: %q", candidate.PreferredCleanup)
+	}
+
+	rule := ruleByName(result.ActiveRules, "node-build-output")
+	if rule.RebuildCost == "" || rule.ReclaimDurability == "" || rule.PreferredCleanup == "" {
+		t.Fatalf("rule missing report metadata: %#v", rule)
+	}
+}
+
+func TestRustTargetIsCautiousProjectArtifact(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "Cargo.toml"), "[package]\nname = \"demo\"\nversion = \"0.1.0\"\n")
+	writeFile(t, filepath.Join(root, "target", "debug", "demo"), "binary")
+
+	result := scanForTest(t, root)
+	candidate := candidateByRule(result, "rust-target")
+	if candidate.Path == "" {
+		t.Fatalf("expected Rust target candidate, got %#v", result.Candidates)
+	}
+	if candidate.Risk != RiskCautious || candidate.CleanableByDefault {
+		t.Fatalf("Rust target should be cautious and not default-cleanable: %#v", candidate)
+	}
+	resolvedRoot, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if candidate.ProjectRoot != resolvedRoot || candidate.MarkerFile != "Cargo.toml" || candidate.ProjectType != "rust" || candidate.ArtifactPath != "target" {
+		t.Fatalf("Rust target missing project metadata: %#v", candidate)
+	}
+	if candidate.RebuildCost == "" {
+		t.Fatalf("Rust target missing rebuild cost: %#v", candidate)
+	}
+}
+
+func TestTargetDirectoryWithoutCargoTomlIsNotRustArtifact(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "package.json"), "{}")
+	writeFile(t, filepath.Join(root, "target", "debug", "not-rust"), "artifact")
+
+	result := scanForTest(t, root)
+	if hasCandidateRule(result, "rust-target") {
+		t.Fatalf("target/ without Cargo.toml should not use Rust rule: %#v", result.Candidates)
+	}
+}
+
 func TestExplicitApplicationCacheRootReportsCacheChildren(t *testing.T) {
 	root := filepath.Join(t.TempDir(), "Library", "Caches")
 	writeFile(t, filepath.Join(root, "Homebrew", "downloads", "bottle.tar.gz"), "cache")
@@ -267,6 +323,36 @@ func TestStreamingReportSkipsDuplicatePhysicalFiles(t *testing.T) {
 		return strings.Contains(skipped.Reason, "duplicate")
 	}) {
 		t.Fatalf("expected duplicate skip, got %#v", result.Skipped)
+	}
+}
+
+func TestStreamingReportIncludesDisplayOnlyMetadata(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "Cargo.toml"), "[package]\nname = \"demo\"\nversion = \"0.1.0\"\n")
+	writeFile(t, filepath.Join(root, "target", "debug", "demo"), "binary")
+
+	var out bytes.Buffer
+	err := NewScanner().StreamJSON(&out, StreamOptions{
+		ScanOptions: ScanOptions{
+			Roots:        []string{root},
+			ExplicitPath: true,
+			Now:          time.Date(2026, 5, 10, 12, 0, 0, 0, time.UTC),
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var result ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatalf("stream emitted invalid JSON: %v\n%s", err, out.String())
+	}
+	candidate := candidateByRule(result, "rust-target")
+	if candidate.RebuildCost == "" || candidate.ReclaimDurability == "" || candidate.PreferredCleanup == "" {
+		t.Fatalf("streamed candidate missing report metadata: %#v", candidate)
+	}
+	if candidate.ProjectType != "rust" || candidate.MarkerFile != "Cargo.toml" {
+		t.Fatalf("streamed candidate missing project metadata: %#v", candidate)
 	}
 }
 
