@@ -180,14 +180,15 @@ safe: 7.4 GB
 cautious: 15.9 GB
 report-only: 1.5 GB
 
-$ codex use ratatoskr-report-analysis ratatoskr-report.json
+$ ratatoskr summary --file ratatoskr-report.json --target 17GB
 
-Best cleanup targets:
-7.4 GB safe generated waste
-10.8 GB cautious rebuildable dependencies
+Target-space projection: 15.8 GiB
+Safe available: 7.4 GiB
+Safe selected: 7.4 GiB
+Cautious selected: 8.5 GiB
+Remaining bytes: 0 B
 
-Do not delete blindly:
-database dumps, Docker volumes, unknown large files</code></pre>
+Excluded report-only: 1.5 GiB across 3 candidates</code></pre>
           </div>
         </div>
         <div class="rescue-steps">
@@ -198,13 +199,13 @@ database dumps, Docker volumes, unknown large files</code></pre>
           </article>
           <article>
             <span>02</span>
-            <h3>Ask the AI skill for judgment</h3>
-            <p>The report-analysis skill ranks cleanup targets, calls out risk, and turns the landfill tour into a short action list. It advises. It does not pull the lever.</p>
+            <h3>Ask for the space you need</h3>
+            <p><code>summary --target 17GB</code> ranks safe candidates first, then adds the smallest useful cautious set when safe is not enough.</p>
           </article>
           <article>
             <span>03</span>
-            <h3>Free enough space</h3>
-            <p>Clean safe generated waste first. Then choose cautious rebuildable folders only when the time cost is worth the disk space.</p>
+            <h3>Inspect the tradeoff</h3>
+            <p>The projection shows rebuild cost, durability, consequence, and report-only exclusions. It is a plan, not a permission slip.</p>
           </article>
         </div>
       </section>
@@ -355,9 +356,9 @@ database dumps, Docker volumes, unknown large files</code></pre>
           <div class="prompt-card">
             <h3>Codex</h3>
             <pre><code>Use skills/ratatoskr-report-analysis/SKILL.md.
-Analyze ratatoskr-report.json.
+Analyze ratatoskr-report.json and the target projection.
 I need 17 GB.
-Give me the shortest safe cleanup plan.</code></pre>
+Tell me what to inspect first.</code></pre>
           </div>
           <div class="prompt-card">
             <h3>Claude</h3>
@@ -396,7 +397,7 @@ and the next manual review step.</code></pre>
         <div class="docs-grid">
           <article class="doc-card">
             <h3>Dataset rescue</h3>
-            <p>You need 17 GB now. Ratatoskr finds generated waste. The skill turns the report into the shortest safe path to enough space.</p>
+            <p>You need 17 GB now. Ratatoskr finds generated waste, then <code>summary --target 17GB</code> shows what to inspect first.</p>
           </article>
           <article class="doc-card">
             <h3>Project folder sweep</h3>
@@ -412,7 +413,7 @@ and the next manual review step.</code></pre>
           </article>
           <article class="doc-card">
             <h3>AI handoff</h3>
-            <p>Give the report to an agent and get a cleanup plan that preserves the warnings, not a cheerful demolition order.</p>
+            <p>Give the report and target projection to an agent when you want a second pass that preserves the warnings, not a cheerful demolition order.</p>
           </article>
         </div>
       </section>
@@ -427,6 +428,8 @@ and the next manual review step.</code></pre>
           <pre><code>ratatoskr scan</code></pre>
           <pre><code>ratatoskr scan --path ~/Code</code></pre>
           <pre><code>ratatoskr scan --path ~/Code --format json > ratatoskr-report.json</code></pre>
+          <pre><code>ratatoskr summary --file ratatoskr-report.json --target 17GB</code></pre>
+          <pre><code>ratatoskr summary --file ratatoskr-report.json --target 17GB --format json</code></pre>
           <pre><code>ratatoskr rules</code></pre>
           <pre><code>ratatoskr report --path ~/Code --format json</code></pre>
           <pre><code>codex use ratatoskr-report-analysis ratatoskr-report.json</code></pre>
@@ -453,10 +456,13 @@ and the next manual review step.</code></pre>
           </article>
           <article class="reference-card">
             <h3><code>ratatoskr summary</code></h3>
-            <p>Summarize an existing JSON report without rescanning.</p>
+            <p>Summarize an existing JSON report without rescanning. Add a target when you need to know what to inspect first.</p>
             <dl>
               <div><dt><code>--file &lt;report.json&gt;</code></dt><dd>Required. Reads a Ratatoskr scan report.</dd></div>
               <div><dt><code>--limit &lt;n&gt;</code></dt><dd>Number of candidates per section. Default: <code>20</code>.</dd></div>
+              <div><dt><code>--target &lt;size&gt;</code></dt><dd>Read-only target-space projection, like <code>500MB</code>, <code>1.5GB</code>, or <code>2GiB</code>.</dd></div>
+              <div><dt><code>--target-bytes &lt;n&gt;</code></dt><dd>Compatibility/debug target input in bytes. <code>--target</code> wins when both are present.</dd></div>
+              <div><dt><code>--format text|json</code></dt><dd>Choose summary output format. JSON includes <code>target_projection</code> when target mode is used.</dd></div>
             </dl>
           </article>
           <article class="reference-card">
