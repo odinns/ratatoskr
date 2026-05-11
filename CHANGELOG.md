@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.0 - Unreleased
+## v1.0.0 - 2026-05-11
 
 First public release.
 

@@ -26,11 +26,37 @@ Unknown stays report-only. That is the point.
 
 ## Install
 
-From source:
+With Go:
 
 ```sh
 go install github.com/odinns/ratatoskr/cmd/ratatoskr@v1.0.0
 ```
+
+With a release binary on Apple Silicon macOS:
+
+```sh
+curl -L -o ratatoskr https://github.com/odinns/ratatoskr/releases/download/v1.0.0/ratatoskr_v1.0.0_darwin_arm64
+chmod +x ratatoskr
+sudo mv ratatoskr /usr/local/bin/
+```
+
+With a release binary on Intel macOS:
+
+```sh
+curl -L -o ratatoskr https://github.com/odinns/ratatoskr/releases/download/v1.0.0/ratatoskr_v1.0.0_darwin_amd64
+chmod +x ratatoskr
+sudo mv ratatoskr /usr/local/bin/
+```
+
+With a release binary on Linux amd64:
+
+```sh
+curl -L -o ratatoskr https://github.com/odinns/ratatoskr/releases/download/v1.0.0/ratatoskr_v1.0.0_linux_amd64
+chmod +x ratatoskr
+sudo mv ratatoskr /usr/local/bin/
+```
+
+Verify downloaded binaries with `checksums.txt` from the same release.
 
 For local development:
 
