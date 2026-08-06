@@ -251,12 +251,12 @@ h2 {
 
 h1 {
   max-width: 12ch;
-  font-size: clamp(2.8rem, 6.5vw, 5.2rem);
+  font-size: 5.2rem;
 }
 
 h2 {
   max-width: 15ch;
-  font-size: clamp(2rem, 4vw, 3.35rem);
+  font-size: 3.35rem;
 }
 
 h3 {
@@ -613,7 +613,7 @@ section[id] {
 
 .refusal-panel h2 {
   max-width: 13ch;
-  font-size: clamp(1.75rem, 3vw, 2.65rem);
+  font-size: 2.65rem;
 }
 
 .refusal-list {
@@ -840,14 +840,22 @@ section[id] {
 .risk-grid {
   display: grid;
   margin-top: 2rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
 }
 
 .risk-card {
+  position: relative;
   padding: 1.25rem;
   overflow: hidden;
   transition: border-color 180ms var(--ease), box-shadow 180ms var(--ease), transform 180ms var(--ease), background-color 180ms var(--ease);
+}
+
+.risk-card::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 0.22rem;
+  content: "";
 }
 
 .risk-card::after {
@@ -881,14 +889,35 @@ section[id] {
   color: #89dd98;
 }
 
+.safe-card::before {
+  background: var(--moss);
+}
+
 .caution-card .risk-badge {
   background: rgba(230, 162, 60, 0.16);
   color: #f0ba63;
 }
 
+.caution-card::before {
+  background: var(--amber);
+}
+
 .report-card .risk-badge {
   background: rgba(184, 74, 53, 0.18);
   color: #e17762;
+}
+
+.report-card::before {
+  background: var(--report);
+}
+
+.danger-card .risk-badge {
+  background: rgba(226, 74, 42, 0.16);
+  color: #e17762;
+}
+
+.danger-card::before {
+  background: var(--rot);
 }
 
 .risk-card h3 {
@@ -1304,6 +1333,18 @@ section[id] {
 }
 
 @media (max-width: 880px) {
+  h1 {
+    font-size: 4rem;
+  }
+
+  h2 {
+    font-size: 2.55rem;
+  }
+
+  .refusal-panel h2 {
+    font-size: 2.2rem;
+  }
+
   .site-header {
     align-items: flex-start;
     flex-direction: column;
@@ -1353,6 +1394,18 @@ section[id] {
 }
 
 @media (max-width: 560px) {
+  h1 {
+    font-size: 3rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  .refusal-panel h2 {
+    font-size: 1.85rem;
+  }
+
   .nav-link {
     padding: 0.48rem 0.58rem;
     font-size: 0.82rem;

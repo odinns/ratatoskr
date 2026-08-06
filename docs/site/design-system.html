@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ratatoskr Design System</title>
+    <meta name="description" content="Ratatoskr visual system tokens, components, and adjustment notes.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&amp;family=JetBrains+Mono:wght@700;800&amp;display=swap" rel="stylesheet">
+    <style>
+      :root {
+        color-scheme: dark;
+        --primary: #120f0c;
+        --on-primary: #f3e9d7;
+        --secondary: #cdbfa9;
+        --tertiary: #c44724;
+        --neutral: #17110e;
+        --surface: #1f1712;
+        --surface-strong: #2a1d16;
+        --border: #3a2b22;
+        --muted: #6d6258;
+        --safe: #55b86b;
+        --safe-text: #89dd98;
+        --cautious: #e6a23c;
+        --cautious-text: #f0ba63;
+        --dangerous: #e24a2a;
+        --dangerous-text: #e17762;
+        --report: #b84a35;
+        --focus: #ffb000;
+        --shadow: 0 30px 90px rgba(0, 0, 0, 0.46);
+        --ease: cubic-bezier(0.2, 0, 0, 1);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at 76% 8%, rgba(196, 71, 36, 0.2), transparent 23rem),
+          radial-gradient(circle at 12% 0%, rgba(85, 184, 107, 0.08), transparent 20rem),
+          linear-gradient(180deg, var(--primary), var(--neutral) 50%, #100d0b);
+        color: var(--on-primary);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      body::before {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        content: "";
+        pointer-events: none;
+        background-image:
+          linear-gradient(rgba(243, 233, 215, 0.032) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(243, 233, 215, 0.024) 1px, transparent 1px);
+        background-size: 44px 44px;
+        mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 72%);
+      }
+
+      main {
+        width: min(1160px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 48px 0 72px;
+      }
+
+      header {
+        display: grid;
+        min-height: 56vh;
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 0.72fr);
+        gap: 40px;
+        align-items: center;
+      }
+
+      h1,
+      h2 {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: 800;
+        letter-spacing: 0;
+      }
+
+      h1 {
+        max-width: 780px;
+        font-size: 5.4rem;
+        line-height: 0.92;
+      }
+
+      h2 {
+        font-size: 3.1rem;
+        line-height: 1;
+      }
+
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h3 {
+        font-size: 1rem;
+        line-height: 1.25;
+      }
+
+      p {
+        color: var(--secondary);
+        line-height: 1.65;
+      }
+
+      code,
+      pre {
+        font-family: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", Menlo, Consolas, monospace;
+      }
+
+      .kicker {
+        margin-bottom: 12px;
+        color: var(--cautious);
+        font-size: 0.76rem;
+        font-weight: 900;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .lede {
+        max-width: 650px;
+        margin-top: 22px;
+        font-size: 1.16rem;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .button {
+        display: inline-flex;
+        min-height: 46px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(205, 191, 169, 0.18);
+        border-radius: 8px;
+        padding: 13px 18px;
+        color: var(--on-primary);
+        font-weight: 900;
+        text-decoration: none;
+      }
+
+      .button.primary {
+        border-color: rgba(255, 176, 0, 0.16);
+        background: var(--tertiary);
+      }
+
+      .button.secondary {
+        background: rgba(31, 23, 18, 0.76);
+        color: var(--secondary);
+      }
+
+      .button:focus-visible,
+      .token:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 3px;
+      }
+
+      .terminal {
+        border: 1px solid rgba(205, 191, 169, 0.18);
+        border-radius: 10px;
+        background: rgba(18, 15, 12, 0.9);
+        box-shadow: var(--shadow), inset 0 0 32px rgba(196, 71, 36, 0.05);
+        overflow: hidden;
+      }
+
+      .terminal-top {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        border-bottom: 1px solid rgba(205, 191, 169, 0.14);
+        padding: 12px 14px;
+        color: var(--secondary);
+        font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: 0.76rem;
+      }
+
+      .terminal-top span {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--tertiary);
+      }
+
+      .terminal-top span:nth-child(2) {
+        background: var(--cautious);
+      }
+
+      .terminal-top span:nth-child(3) {
+        background: var(--safe);
+      }
+
+      pre {
+        margin: 0;
+        padding: 20px;
+        color: var(--on-primary);
+        font-size: 0.9rem;
+        line-height: 1.65;
+        white-space: pre-wrap;
+      }
+
+      section {
+        margin-top: 72px;
+      }
+
+      .section-head {
+        display: grid;
+        grid-template-columns: minmax(0, 0.75fr) minmax(260px, 0.45fr);
+        gap: 32px;
+        align-items: end;
+        margin-bottom: 24px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .card,
+      .token,
+      .adjustment {
+        border: 1px solid rgba(205, 191, 169, 0.16);
+        border-radius: 10px;
+        background: rgba(31, 23, 18, 0.74);
+      }
+
+      .card,
+      .adjustment {
+        padding: 20px;
+      }
+
+      .card h3,
+      .adjustment h3 {
+        margin-bottom: 10px;
+      }
+
+      .tokens {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .token {
+        min-height: 142px;
+        overflow: hidden;
+      }
+
+      .swatch {
+        height: 76px;
+        border-bottom: 1px solid rgba(205, 191, 169, 0.14);
+      }
+
+      .token-body {
+        padding: 12px;
+      }
+
+      .token strong,
+      .token code {
+        display: block;
+      }
+
+      .token code {
+        margin-top: 4px;
+        color: var(--secondary);
+        font-size: 0.78rem;
+      }
+
+      .risk-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .badge {
+        display: inline-flex;
+        width: max-content;
+        border: 1px solid rgba(205, 191, 169, 0.14);
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: rgba(18, 15, 12, 0.42);
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+      }
+
+      .safe {
+        color: var(--safe-text);
+      }
+
+      .cautious {
+        color: var(--cautious-text);
+      }
+
+      .dangerous {
+        color: var(--dangerous-text);
+      }
+
+      .report {
+        color: var(--dangerous-text);
+      }
+
+      .command-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 16px;
+        align-items: center;
+        border: 1px solid rgba(205, 191, 169, 0.16);
+        border-radius: 8px;
+        padding: 16px;
+        background: rgba(18, 15, 12, 0.5);
+      }
+
+      .command-card code {
+        color: var(--on-primary);
+        overflow-wrap: anywhere;
+      }
+
+      .adjustments {
+        display: grid;
+        gap: 12px;
+      }
+
+      .adjustment {
+        display: grid;
+        grid-template-columns: 140px minmax(0, 1fr);
+        gap: 20px;
+      }
+
+      .status {
+        color: var(--focus);
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      .status.done {
+        color: var(--safe-text);
+      }
+
+      .status.watch {
+        color: var(--cautious-text);
+      }
+
+      @media (max-width: 860px) {
+        h1 {
+          font-size: 4rem;
+        }
+
+        h2 {
+          font-size: 2.4rem;
+        }
+
+        header,
+        .section-head,
+        .adjustment {
+          grid-template-columns: 1fr;
+        }
+
+        .grid,
+        .tokens,
+        .risk-row {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 560px) {
+        h1 {
+          font-size: 3rem;
+        }
+
+        h2 {
+          font-size: 2rem;
+        }
+
+        main {
+          width: min(100% - 24px, 1160px);
+          padding-top: 28px;
+        }
+
+        .grid,
+        .tokens,
+        .risk-row {
+          grid-template-columns: 1fr;
+        }
+
+        .command-card {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media print {
+        :root {
+          color-scheme: light;
+        }
+
+        body {
+          background: #ffffff;
+          color: #1a1a1a;
+        }
+
+        body::before {
+          display: none;
+        }
+
+        p,
+        .token code {
+          color: #3f3a34;
+        }
+
+        .card,
+        .token,
+        .adjustment,
+        .terminal,
+        .command-card {
+          border-color: #d2c8ba;
+          background: #ffffff;
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="kicker">Ratatoskr design system</p>
+          <h1>Evidence first. Fangs optional.</h1>
+          <p class="lede">A compact visual language for a disk scanner that explains risk before action. Dark bark, bone text, rust actions, and risk colors that do actual work.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#components">Components</a>
+            <a class="button secondary" href="#adjustments">Adjustments</a>
+          </div>
+        </div>
+        <aside class="terminal" aria-label="Example terminal output">
+          <div class="terminal-top"><span></span><span></span><span></span>ratatoskr scan</div>
+          <pre><code>found: 24.8 GB potential waste
+safe: 7.4 GB
+cautious: 15.9 GB
+report-only: 1.5 GB
+
+unknown stays report-only</code></pre>
+        </aside>
+      </header>
+
+      <section aria-labelledby="colors">
+        <div class="section-head">
+          <div>
+            <p class="kicker">Color tokens</p>
+            <h2 id="colors">Risk has to be visible.</h2>
+          </div>
+          <p>The palette is warm and dark, but risk colors must break the mood. Green, amber, and red-orange are product semantics, not decoration.</p>
+        </div>
+        <div class="tokens">
+          <article class="token" tabindex="0"><div class="swatch" style="background:#120f0c"></div><div class="token-body"><strong>primary</strong><code>#120F0C</code></div></article>
+          <article class="token" tabindex="0"><div class="swatch" style="background:#f3e9d7"></div><div class="token-body"><strong>on-primary</strong><code>#F3E9D7</code></div></article>
+          <article class="token" tabindex="0"><div class="swatch" style="background:#c44724"></div><div class="token-body"><strong>tertiary</strong><code>#C44724</code></div></article>
+          <article class="token" tabindex="0"><div class="swatch" style="background:#55b86b"></div><div class="token-body"><strong>safe</strong><code>#55B86B</code></div></article>
+          <article class="token" tabindex="0"><div class="swatch" style="background:#e6a23c"></div><div class="token-body"><strong>cautious</strong><code>#E6A23C</code></div></article>
+          <article class="token" tabindex="0"><div class="swatch" style="background:#e24a2a"></div><div class="token-body"><strong>dangerous</strong><code>#E24A2A</code></div></article>
+          <article class="token" tabindex="0"><div class="swatch" style="background:#e17762"></div><div class="token-body"><strong>dangerous-text</strong><code>#E17762</code></div></article>
+          <article class="token" tabindex="0"><div class="swatch" style="background:#1f1712"></div><div class="token-body"><strong>surface</strong><code>#1F1712</code></div></article>
+          <article class="token" tabindex="0"><div class="swatch" style="background:#ffb000"></div><div class="token-body"><strong>focus</strong><code>#FFB000</code></div></article>
+        </div>
+      </section>
+
+      <section id="components" aria-labelledby="components-title">
+        <div class="section-head">
+          <div>
+            <p class="kicker">Components</p>
+            <h2 id="components-title">Small pieces with strict jobs.</h2>
+          </div>
+          <p>Buttons act. Badges classify. Terminals show plausible commands. Panels group evidence. Nothing should decorate uncertainty into confidence.</p>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <h3>Buttons</h3>
+            <p>Primary for action, secondary for inspection. Rust is not confetti.</p>
+            <div class="hero-actions">
+              <a class="button primary" href="#">Install</a>
+              <a class="button secondary" href="#">Inspect rules</a>
+            </div>
+          </article>
+          <article class="card">
+            <h3>Risk badges</h3>
+            <p>Each badge maps to behavior. The color is a contract.</p>
+            <div class="hero-actions">
+              <span class="badge safe">Safe</span>
+              <span class="badge cautious">Cautious</span>
+              <span class="badge dangerous">Dangerous</span>
+              <span class="badge report">Report-only</span>
+            </div>
+          </article>
+          <article class="card">
+            <h3>Command strip</h3>
+            <p>Commands should be copyable, readable, and honest about mutation.</p>
+            <div class="command-card">
+              <code>ratatoskr summary --file report.json --target 17GB</code>
+              <span class="badge cautious">Plan</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="risk-title">
+        <div class="section-head">
+          <div>
+            <p class="kicker">Risk model</p>
+            <h2 id="risk-title">Never let the mood outrank the model.</h2>
+          </div>
+          <p>Every scan result needs path, size, category, risk, rule, reason, and default cleanability. Leave one out and the UI starts guessing.</p>
+        </div>
+        <div class="risk-row">
+          <article class="card"><span class="badge safe">Safe</span><h3>Generated and narrow</h3><p>Known owner, known rebuild cost, known exclusions.</p></article>
+          <article class="card"><span class="badge cautious">Cautious</span><h3>Review first</h3><p>Likely rebuildable, but the consequence matters.</p></article>
+          <article class="card"><span class="badge report">Report-only</span><h3>Name it, do not clean</h3><p>Useful evidence that stays out of the action path.</p></article>
+          <article class="card"><span class="badge dangerous">Dangerous</span><h3>Protected or unknown</h3><p>Big is not trash. Old is not permission.</p></article>
+        </div>
+      </section>
+
+      <section id="adjustments" aria-labelledby="adjustments-title">
+        <div class="section-head">
+          <div>
+            <p class="kicker">Adjustment report</p>
+            <h2 id="adjustments-title">What changed on the site.</h2>
+          </div>
+          <p>The first pass found four real issues. They are now fixed in the site, with one atmospheric thing left to watch.</p>
+        </div>
+        <div class="adjustments">
+          <article class="adjustment">
+            <span class="status done">Done</span>
+            <div>
+              <h3>Viewport-scaled headings</h3>
+              <p>Removed <code>clamp()</code> with <code>vw</code> from <code>docs/site/assets/site.css</code>. Headings now use fixed sizes with breakpoint overrides.</p>
+            </div>
+          </article>
+          <article class="adjustment">
+            <span class="status done">Done</span>
+            <div>
+              <h3>Palette balance in the existing site</h3>
+              <p>The risk section now has four cards and color bars for safe, cautious, report-only, and dangerous. The safety model is harder to miss.</p>
+            </div>
+          </article>
+          <article class="adjustment">
+            <span class="status done">Done</span>
+            <div>
+              <h3>Typography source mismatch</h3>
+              <p>The site and this design-system page now import Inter and JetBrains Mono from the same Google Fonts request.</p>
+            </div>
+          </article>
+          <article class="adjustment">
+            <span class="status done">Done</span>
+            <div>
+              <h3>Navigation density</h3>
+              <p>The header nav was trimmed to the main path: Belief, 17 GB, Risk, Flow, Docs, Commands.</p>
+            </div>
+          </article>
+          <article class="adjustment">
+            <span class="status watch">Watch</span>
+            <div>
+              <h3>Atmospheric effects</h3>
+              <p>The grid, cursor glow, and terminal pulse work now. Keep them quiet. If they start competing with command output or risk labels, cut them first.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
