@@ -56,6 +56,46 @@ func TestScanFindsKnownGeneratedWaste(t *testing.T) {
 	}
 }
 
+func TestLaravelGitignoreFilesAreNeverCandidates(t *testing.T) {
+	root := t.TempDir()
+	laravel := filepath.Join(root, "laravel")
+	writeFile(t, filepath.Join(laravel, "artisan"), "")
+	writeFile(t, filepath.Join(laravel, "composer.json"), `{"require":{"laravel/framework":"^11.0"}}`)
+	writeFile(t, filepath.Join(laravel, "storage/framework/views/.gitignore"), "*\n!.gitignore\n")
+	writeFile(t, filepath.Join(laravel, "storage/framework/views/a.php"), "view")
+	writeFile(t, filepath.Join(laravel, "storage/framework/cache/.gitignore"), "*\n!data/\n!.gitignore\n")
+	writeFile(t, filepath.Join(laravel, "storage/framework/cache/data/.gitignore"), "*\n!.gitignore\n")
+	writeFile(t, filepath.Join(laravel, "storage/framework/cache/data/ab/cd/entry"), "cache")
+
+	var out bytes.Buffer
+	err := NewScanner().StreamJSON(&out, StreamOptions{
+		ScanOptions: ScanOptions{
+			Roots:        []string{root},
+			ExplicitPath: true,
+			Now:          time.Date(2026, 5, 10, 12, 0, 0, 0, time.UTC),
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var streamed ScanResult
+	if err := json.Unmarshal(out.Bytes(), &streamed); err != nil {
+		t.Fatalf("stream emitted invalid JSON: %v\n%s", err, out.String())
+	}
+
+	for name, result := range map[string]ScanResult{"scan": scanForTest(t, root), "stream": streamed} {
+		assertNoCandidateContains(t, result, ".gitignore")
+		views := candidateByRule(result, "laravel-compiled-views")
+		if filepath.Base(views.Path) != "a.php" {
+			t.Fatalf("%s: compiled view candidate wrong: %#v", name, result.Candidates)
+		}
+		cache := candidatesByRule(result, "laravel-framework-cache")
+		if len(cache) != 1 || filepath.Base(cache[0].Path) != "ab" {
+			t.Fatalf("%s: want only storage/framework/cache/data/ab, got %#v", name, cache)
+		}
+	}
+}
+
 func TestUnknownLargeFilesAreDangerousUnlessPersonalOrProtected(t *testing.T) {
 	root := t.TempDir()
 	writeLargeFile(t, filepath.Join(root, "big.bin"), unknownLargeFileMin+1)

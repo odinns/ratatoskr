@@ -193,7 +193,7 @@ func (s Scanner) addProjectCandidates(project string, kind projectKind, explicit
 		addGlobCandidates(project, "storage/logs/*.log", ruleByName(s.rules, "laravel-storage-logs"), state)
 		addGlobCandidates(project, "bootstrap/cache/*.php", ruleByName(s.rules, "laravel-bootstrap-cache"), state)
 		addChildrenCandidate(project, "storage/framework/views", ruleByName(s.rules, "laravel-compiled-views"), state)
-		addChildrenCandidate(project, "storage/framework/cache", ruleByName(s.rules, "laravel-framework-cache"), state)
+		addChildrenCandidate(project, "storage/framework/cache/data", ruleByName(s.rules, "laravel-framework-cache"), state)
 	}
 	if kind.node {
 		rule := ruleByName(s.rules, "node-build-output")
@@ -308,6 +308,10 @@ func addChildrenCandidate(project, rel string, rule Rule, state *scanState) {
 		return
 	}
 	for _, entry := range entries {
+		// Laravel ships these .gitignore files in git; they keep the directory, not cache.
+		if entry.Name() == ".gitignore" {
+			continue
+		}
 		addPathCandidate(filepath.Join(dir, entry.Name()), rule, state)
 	}
 }

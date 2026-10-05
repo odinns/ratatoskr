@@ -52,7 +52,7 @@ func BuiltInRules() []Rule {
 			Source:             "built-in",
 			Category:           CategoryCaches,
 			Risk:               RiskSafe,
-			PathPatterns:       []string{"storage/framework/cache/*"},
+			PathPatterns:       []string{"storage/framework/cache/data/*"},
 			AppliesWhen:        []string{"artisan exists", "composer.json requires laravel/framework"},
 			Exclusions:         protectedLaravelExclusions(),
 			Reason:             "Laravel stores generated framework cache entries here.",
@@ -418,5 +418,6 @@ func protectedLaravelExclusions() []string {
 		".env",
 		"public/uploads",
 		"public/storage",
+		".gitignore",
 	}
 }

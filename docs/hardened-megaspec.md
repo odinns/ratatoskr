@@ -617,7 +617,8 @@ Safe candidates:
 - `storage/logs/*.log`
 - `bootstrap/cache/*.php`, with explanation that framework cache may need rebuild
 - `storage/framework/views/*`, if clearly compiled views
-- `storage/framework/cache/*`, only with narrow exclusions
+- `storage/framework/cache/data/*`, only with narrow exclusions
+- never the `.gitignore` files that Laravel keeps in these directories
 
 Never touch:
 
