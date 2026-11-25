@@ -159,6 +159,9 @@ func (s Scanner) scanRoot(root string, rootKind scanRootKind, explicit bool, sta
 				state.addSkipped(SkippedPath{Path: path, Reason: "personal folder is report-only"})
 				return filepath.SkipDir
 			}
+			if isInsideDependencyTree(root, path) {
+				return nil
+			}
 			if kind := detectProject(path); kind.any() {
 				s.addProjectCandidates(path, kind, explicit, state)
 			}
@@ -393,6 +396,35 @@ type projectKind struct {
 
 func (p projectKind) any() bool {
 	return p.laravel || p.node || p.composer || p.rust || p.swift || p.terraform || p.serverless || p.gradle || p.maven
+}
+
+// dependencyTreeDirs hold packages that someone else built and shipped.
+// A package.json or composer.json inside them belongs to that package, not
+// to the user, so its dist/ or build/ is not regenerable build output.
+var dependencyTreeDirs = map[string]bool{
+	"node_modules":     true,
+	"vendor":           true,
+	"bower_components": true,
+	".venv":            true,
+	"venv":             true,
+	"site-packages":    true,
+}
+
+// isInsideDependencyTree reports whether dir sits inside a dependency or
+// vendored-asset directory below the scan root. Only segments below root
+// count, so an explicit scan of such a directory still works.
+func isInsideDependencyTree(root, dir string) bool {
+	rel, err := filepath.Rel(root, dir)
+	if err != nil {
+		return false
+	}
+	parts := strings.Split(filepath.ToSlash(rel), "/")
+	for _, part := range parts[:len(parts)-1] {
+		if dependencyTreeDirs[part] {
+			return true
+		}
+	}
+	return false
 }
 
 func detectProject(dir string) projectKind {

@@ -69,7 +69,7 @@ func BuiltInRules() []Rule {
 			Risk:               RiskSafe,
 			PathPatterns:       []string{".next", ".nuxt", "dist", "build", ".turbo", ".vite", "coverage"},
 			AppliesWhen:        []string{"package.json or a known lockfile exists"},
-			Exclusions:         []string{"node_modules"},
+			Exclusions:         []string{"node_modules", "packages inside node_modules, vendor, bower_components, .venv, venv or site-packages"},
 			Reason:             "Node tooling generates these build and cache directories.",
 			Consequence:        "Deleting them may require a rebuild or rerun of tests.",
 			CleanableByDefault: true,

@@ -126,6 +126,9 @@ func (s Scanner) streamRoot(root string, kind scanRootKind, explicit bool, repor
 				report.addSkipped(SkippedPath{Path: path, Reason: "personal folder is report-only"})
 				return filepath.SkipDir
 			}
+			if isInsideDependencyTree(root, path) {
+				return nil
+			}
 			if project := detectProject(path); project.any() {
 				s.streamProjectCandidates(path, project, explicit, report)
 			}

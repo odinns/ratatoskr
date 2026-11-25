@@ -276,6 +276,82 @@ func TestNodeAndComposerArtifactsIncludeProjectMetadata(t *testing.T) {
 	}
 }
 
+// writeNestedPackageFixture builds a user project whose own dist/ is real
+// build output, plus shipped packages that carry their own package.json and
+// dist/ inside dependency trees. Only the project's own dist/ is waste.
+func writeNestedPackageFixture(t *testing.T, root string) {
+	t.Helper()
+	writeFile(t, filepath.Join(root, "app", "package.json"), "{}")
+	writeFile(t, filepath.Join(root, "app", "dist", "app.js"), "build")
+	for _, pkg := range []string{
+		"py/.venv/lib/python3.13/site-packages/pyright/dist",
+		"site/public/vendor/adminlte",
+		"site/public/vendor/adminlte/bower_components/bootstrap",
+		"legacy/venv/lib/tool",
+	} {
+		writeFile(t, filepath.Join(root, pkg, "package.json"), "{}")
+		writeFile(t, filepath.Join(root, pkg, "dist", "shipped.js"), "shipped")
+	}
+}
+
+func assertOnlyOwnBuildOutput(t *testing.T, result ScanResult, root string) {
+	t.Helper()
+	resolvedRoot, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := filepath.Join(resolvedRoot, "app", "dist")
+	got := candidatesByRule(result, "node-build-output")
+	if len(got) != 1 || got[0].Path != want {
+		paths := []string{}
+		for _, candidate := range got {
+			paths = append(paths, candidate.Path)
+		}
+		t.Fatalf("node-build-output should only flag %s, got %v", want, paths)
+	}
+}
+
+func TestNodeBuildOutputIgnoresPackagesInsideDependencyTrees(t *testing.T) {
+	root := t.TempDir()
+	writeNestedPackageFixture(t, root)
+
+	assertOnlyOwnBuildOutput(t, scanForTest(t, root), root)
+}
+
+func TestStreamingNodeBuildOutputIgnoresPackagesInsideDependencyTrees(t *testing.T) {
+	root := t.TempDir()
+	writeNestedPackageFixture(t, root)
+
+	var out bytes.Buffer
+	err := NewScanner().StreamJSON(&out, StreamOptions{
+		ScanOptions: ScanOptions{
+			Roots:        []string{root},
+			ExplicitPath: true,
+			Now:          time.Date(2026, 5, 10, 12, 0, 0, 0, time.UTC),
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var result ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatalf("stream emitted invalid JSON: %v\n%s", err, out.String())
+	}
+	assertOnlyOwnBuildOutput(t, result, root)
+}
+
+func TestExplicitScanOfPackageInsideDependencyTreeStillDetectsIt(t *testing.T) {
+	root := t.TempDir()
+	pkg := filepath.Join(root, "vendor", "tool")
+	writeFile(t, filepath.Join(pkg, "package.json"), "{}")
+	writeFile(t, filepath.Join(pkg, "dist", "tool.js"), "build")
+
+	result := scanForTest(t, pkg)
+	if !hasCandidateRule(result, "node-build-output") {
+		t.Fatalf("explicit scan root inside vendor/ should still be treated as a project: %#v", result.Candidates)
+	}
+}
+
 func TestRustTargetIsCautiousProjectArtifact(t *testing.T) {
 	root := t.TempDir()
 	writeFile(t, filepath.Join(root, "Cargo.toml"), "[package]\nname = \"demo\"\nversion = \"0.1.0\"\n")
