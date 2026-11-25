@@ -56,6 +56,46 @@ func TestScanFindsKnownGeneratedWaste(t *testing.T) {
 	}
 }
 
+func TestLaravelGitignoreFilesAreNeverCandidates(t *testing.T) {
+	root := t.TempDir()
+	laravel := filepath.Join(root, "laravel")
+	writeFile(t, filepath.Join(laravel, "artisan"), "")
+	writeFile(t, filepath.Join(laravel, "composer.json"), `{"require":{"laravel/framework":"^11.0"}}`)
+	writeFile(t, filepath.Join(laravel, "storage/framework/views/.gitignore"), "*\n!.gitignore\n")
+	writeFile(t, filepath.Join(laravel, "storage/framework/views/a.php"), "view")
+	writeFile(t, filepath.Join(laravel, "storage/framework/cache/.gitignore"), "*\n!data/\n!.gitignore\n")
+	writeFile(t, filepath.Join(laravel, "storage/framework/cache/data/.gitignore"), "*\n!.gitignore\n")
+	writeFile(t, filepath.Join(laravel, "storage/framework/cache/data/ab/cd/entry"), "cache")
+
+	var out bytes.Buffer
+	err := NewScanner().StreamJSON(&out, StreamOptions{
+		ScanOptions: ScanOptions{
+			Roots:        []string{root},
+			ExplicitPath: true,
+			Now:          time.Date(2026, 5, 10, 12, 0, 0, 0, time.UTC),
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var streamed ScanResult
+	if err := json.Unmarshal(out.Bytes(), &streamed); err != nil {
+		t.Fatalf("stream emitted invalid JSON: %v\n%s", err, out.String())
+	}
+
+	for name, result := range map[string]ScanResult{"scan": scanForTest(t, root), "stream": streamed} {
+		assertNoCandidateContains(t, result, ".gitignore")
+		views := candidateByRule(result, "laravel-compiled-views")
+		if filepath.Base(views.Path) != "a.php" {
+			t.Fatalf("%s: compiled view candidate wrong: %#v", name, result.Candidates)
+		}
+		cache := candidatesByRule(result, "laravel-framework-cache")
+		if len(cache) != 1 || filepath.Base(cache[0].Path) != "ab" {
+			t.Fatalf("%s: want only storage/framework/cache/data/ab, got %#v", name, cache)
+		}
+	}
+}
+
 func TestUnknownLargeFilesAreDangerousUnlessPersonalOrProtected(t *testing.T) {
 	root := t.TempDir()
 	writeLargeFile(t, filepath.Join(root, "big.bin"), unknownLargeFileMin+1)
@@ -233,6 +273,82 @@ func TestNodeAndComposerArtifactsIncludeProjectMetadata(t *testing.T) {
 	}
 	if vendor.ProjectRoot != resolvedComposer || vendor.ProjectType != "composer" || vendor.MarkerFile != "composer.json" || vendor.ArtifactPath != "vendor" {
 		t.Fatalf("composer candidate missing project metadata: %#v", vendor)
+	}
+}
+
+// writeNestedPackageFixture builds a user project whose own dist/ is real
+// build output, plus shipped packages that carry their own package.json and
+// dist/ inside dependency trees. Only the project's own dist/ is waste.
+func writeNestedPackageFixture(t *testing.T, root string) {
+	t.Helper()
+	writeFile(t, filepath.Join(root, "app", "package.json"), "{}")
+	writeFile(t, filepath.Join(root, "app", "dist", "app.js"), "build")
+	for _, pkg := range []string{
+		"py/.venv/lib/python3.13/site-packages/pyright/dist",
+		"site/public/vendor/adminlte",
+		"site/public/vendor/adminlte/bower_components/bootstrap",
+		"legacy/venv/lib/tool",
+	} {
+		writeFile(t, filepath.Join(root, pkg, "package.json"), "{}")
+		writeFile(t, filepath.Join(root, pkg, "dist", "shipped.js"), "shipped")
+	}
+}
+
+func assertOnlyOwnBuildOutput(t *testing.T, result ScanResult, root string) {
+	t.Helper()
+	resolvedRoot, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := filepath.Join(resolvedRoot, "app", "dist")
+	got := candidatesByRule(result, "node-build-output")
+	if len(got) != 1 || got[0].Path != want {
+		paths := []string{}
+		for _, candidate := range got {
+			paths = append(paths, candidate.Path)
+		}
+		t.Fatalf("node-build-output should only flag %s, got %v", want, paths)
+	}
+}
+
+func TestNodeBuildOutputIgnoresPackagesInsideDependencyTrees(t *testing.T) {
+	root := t.TempDir()
+	writeNestedPackageFixture(t, root)
+
+	assertOnlyOwnBuildOutput(t, scanForTest(t, root), root)
+}
+
+func TestStreamingNodeBuildOutputIgnoresPackagesInsideDependencyTrees(t *testing.T) {
+	root := t.TempDir()
+	writeNestedPackageFixture(t, root)
+
+	var out bytes.Buffer
+	err := NewScanner().StreamJSON(&out, StreamOptions{
+		ScanOptions: ScanOptions{
+			Roots:        []string{root},
+			ExplicitPath: true,
+			Now:          time.Date(2026, 5, 10, 12, 0, 0, 0, time.UTC),
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var result ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatalf("stream emitted invalid JSON: %v\n%s", err, out.String())
+	}
+	assertOnlyOwnBuildOutput(t, result, root)
+}
+
+func TestExplicitScanOfPackageInsideDependencyTreeStillDetectsIt(t *testing.T) {
+	root := t.TempDir()
+	pkg := filepath.Join(root, "vendor", "tool")
+	writeFile(t, filepath.Join(pkg, "package.json"), "{}")
+	writeFile(t, filepath.Join(pkg, "dist", "tool.js"), "build")
+
+	result := scanForTest(t, pkg)
+	if !hasCandidateRule(result, "node-build-output") {
+		t.Fatalf("explicit scan root inside vendor/ should still be treated as a project: %#v", result.Candidates)
 	}
 }
 

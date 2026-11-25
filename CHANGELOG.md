@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Packages shipped inside `node_modules`, `vendor`, `bower_components`, `.venv`, `venv` or `site-packages` are no longer detected as projects. Their own `dist/` and `build/` folders were reported as safe Node build output, but they are part of the package and cannot be rebuilt. Deleting them broke the tool or site that used them.
+
 ## v1.1.0 - 2026-05-11
 
 Scan/report closeout release.

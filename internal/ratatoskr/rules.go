@@ -52,7 +52,7 @@ func BuiltInRules() []Rule {
 			Source:             "built-in",
 			Category:           CategoryCaches,
 			Risk:               RiskSafe,
-			PathPatterns:       []string{"storage/framework/cache/*"},
+			PathPatterns:       []string{"storage/framework/cache/data/*"},
 			AppliesWhen:        []string{"artisan exists", "composer.json requires laravel/framework"},
 			Exclusions:         protectedLaravelExclusions(),
 			Reason:             "Laravel stores generated framework cache entries here.",
@@ -69,7 +69,7 @@ func BuiltInRules() []Rule {
 			Risk:               RiskSafe,
 			PathPatterns:       []string{".next", ".nuxt", "dist", "build", ".turbo", ".vite", "coverage"},
 			AppliesWhen:        []string{"package.json or a known lockfile exists"},
-			Exclusions:         []string{"node_modules"},
+			Exclusions:         []string{"node_modules", "packages inside node_modules, vendor, bower_components, .venv, venv or site-packages"},
 			Reason:             "Node tooling generates these build and cache directories.",
 			Consequence:        "Deleting them may require a rebuild or rerun of tests.",
 			CleanableByDefault: true,
@@ -418,5 +418,6 @@ func protectedLaravelExclusions() []string {
 		".env",
 		"public/uploads",
 		"public/storage",
+		".gitignore",
 	}
 }
